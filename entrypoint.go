@@ -20,7 +20,6 @@ func main() {
 	}
 
 	for i, user := range users.Users {
-		logger.Logf(logger.LogLevelDefault, "WAT!!: %+v", user.Emails)
 		emails := user.Emails.([]interface{})
 		for _, email := range emails {
 			logger.Logf(logger.LogLevelDefault, "User %d: %+v", i, email)

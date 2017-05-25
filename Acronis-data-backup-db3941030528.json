@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "acronis-data-backup",
+  "private_key_id": "db3941030528c028db2a21237d32234ae5d5e302",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCIcvJ3oATOkdKr\n6z/k2QCnG8jL299nNzDhHVGZPd8X6u1dLUOKMQXqaPEYeJVgib1u7Q8PI7L8bP2D\nIXRJ8l/mtPKCMk7KrM3hNF82db7is+ar2aWEle+HERVizbncG5+d0fuS60IAbB4G\nMXhbVsX2iiHJ/qMGFH0S0UqsKUzSZgzQpmhl9u5Up1zsddVIRI9ZGiZju4i54wWR\ncgkfzPg4QW+y0hnEnrWkJofwrn2837OoNceZ/PJ/aEgkcZqLyDhrtw9Dvpeh0IvG\nKUxt3YXQToztVF51pbvemg1hQ60pLXReKadqpBd9N9gCMEoYNkRwxPVD5gp7/L8T\ntC6qiWitAgMBAAECggEAAO1zG4AReEwCeBu1x/r3p6snLseUWbHE2crmuplykkmN\nCoSbwG074o+LEAUF0u2sxXvEDfDKry+Ye5M3JKeKollZiqwH4BXTonPGL+sV/JmH\neGSW3PNd+PeTQyQt3sKrT5nVUXba8IDLpXQhotFQsC/ZMfPSrOBnx0B39vqi5I09\nf5FEVM2qz+sLWzdaDa1/nPmmdVs1YYzdPTZyG1cKkcFXRTxm14F6tzPTHgMCSd3B\nmbJfEWg7ajuaAUbn8916PdGWqnaUKnLW6VS4y8IANK2Dg32jQBiiT2aJhGDS8LYe\nRiW3LkVv89I2B2hy6Ew/MaD/c5sYbPPRdM6Q+qCxUQKBgQC6+haZKwQmJHip5lLU\nCIGZwwNPXIU3E7cxd+BEudkgzXu13VPK2xF8SGLN10z+aaIigmWzwy7b57DGMd7P\nr6gDlpofu0L67VHaz1czToA61bSS/x4pZRaPB13CoHKIrnScMZXbjYyxfQygU37M\nQXX02PZEj0sRa6EICHJ3QN6d9QKBgQC60c/whMo0K6rzO77dB7RtICM7lenBjeVE\n+LV/kK2AMH+bC/wb0qtD4n5MuaGvF3PjooZfPlqwU+Z9tSN39OASwj9sMwJKOqtO\nUPY6LPwzUPU7uUIi1En8Q6RZKu2w9RXxl8C3eL/s5DR/cYHnJIaQmSJA4RzSiS3L\n8j9A7Sj02QKBgC+w0krHGgvQiaZsRPwoH0Zk41c+tgvST4uik+VzsdoYD1HX3iOD\ntPYKUIlIPS83Kk+7Cs3LHwygEAq9daNrnmMr6qvlS7RNC+/PquI/R526HJDR2ZOd\nYR+iNVwLKKuMM9oTG7IgbJ5o0uuh4Fmg6MFHBal/ExqiZTRzUx7vwNhxAoGAaSlP\n7ukg1Ys7OJ4KC2uZ4c+0ZYc2xVB1nYSOzlcHg2BJhGKTsKm+5ICrbc8Ut3XxM1M6\nZoS4Ege4eEytwYmjVIvpnaN9B4HNClHCuO63rL9GvC7FjsuHNixxaAwlLnZXut4c\nimq7RsMS1iZz5EQIR38b6/+L9OtpTyN2/bpCUskCgYB+dKZFCA5wBk9ln6O9dc3h\nQLy7ly+Qie4dGw3n/IChZ9280ZJA9KVS9xvBTG4F5T1vTNO5JW1OSXJQIeOBARn6\nvJoC5IbMyodasSAzmnlNAHLYmG5dAFijf+SPftsr9dwRMQiSI+ZiUliMTFvpeXuf\nH+dOiQvyucqQPfMtfyr2EA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "acronis-gdrive-backup@acronis-data-backup.iam.gserviceaccount.com",
+  "client_id": "102186663164073897280",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/acronis-gdrive-backup%40acronis-data-backup.iam.gserviceaccount.com"
+}
