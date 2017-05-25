@@ -2,50 +2,22 @@ package main
 
 import (
 	//"google.golang.org/api/drive/v3"
-	"google.golang.org/api/admin/directory/v1"
-	"golang.org/x/oauth2/google"
+
+)
+import (
+	"github.com/kudinovdenis/acronis-gd/admin_info"
 	"github.com/kudinovdenis/logger"
-	"io/ioutil"
-	"context"
 )
 
 func main() {
-	// Use oauth2.NoContext if there isn't a good context to pass in.
-	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("./Acronis-data-backup-58ecc97b43ae.json")
+	users, err := admin_info.GetListOfUsers()
 	if err != nil {
-		logger.Log(logger.LogLevelError, err.Error())
+		logger.Logf(logger.LogLevelDefault, "Error while getting list of users: %s", err.Error())
 		return
 	}
 
-	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserScope, admin.AdminDirectoryUserReadonlyScope)// admin.AdminDirectoryUserReadonlyScope, "https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.metadata.readonly","https://www.googleapis.com/auth/drive.metadata","https://www.googleapis.com/auth/drive.photos.readonly")
-	if err != nil {
-		logger.Log(logger.LogLevelError, err.Error())
-		return
-	}
-
-	data.Subject = "admin@dkudinov.com"
-
-	logger.Logf(logger.LogLevelDefault, "DATA: %+v", data)
-
-	adminService, err := admin.New(data.Client(ctx))
-	if err != nil {
-		logger.Log(logger.LogLevelError, err.Error())
-		return
-	}
-	usersListCall := adminService.Users.List()
-	usersListCall = usersListCall.Domain("dkudinov.com")
-	usersListCall = usersListCall.Projection("full")
-
-	res, err := usersListCall.Do()
-	if err != nil {
-		logger.Log(logger.LogLevelError, err.Error())
-		return
-	}
-
-	for i := range res.Users {
-		logger.Logf(logger.LogLevelDefault, "User %d: %+v", i, res.Users[i].Emails)
+	for i, user := range users.Users {
+		logger.Logf(logger.LogLevelDefault, "User %d: %+v", i, user.Emails)
 	}
 
 	// Work with users as you want to
