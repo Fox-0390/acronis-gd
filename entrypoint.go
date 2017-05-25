@@ -1,10 +1,6 @@
 package main
 
 import (
-	//"google.golang.org/api/drive/v3"
-
-)
-import (
 	"github.com/kudinovdenis/acronis-gd/admin_info"
 	"github.com/kudinovdenis/logger"
 )
