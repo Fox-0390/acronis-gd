@@ -37,7 +37,6 @@ func main() {
 	usersListCall := adminService.Users.List()
 	usersListCall = usersListCall.Domain("dkudinov.com")
 	usersListCall = usersListCall.Projection("full")
-	usersListCall = usersListCall.MaxResults(5)
 
 	res, err := usersListCall.Do()
 	if err != nil {
