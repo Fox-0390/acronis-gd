@@ -18,7 +18,7 @@ func Init() error {
 		return err
 	}
 
-	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserScope, admin.AdminDirectoryUserReadonlyScope)// admin.AdminDirectoryUserReadonlyScope, "https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.metadata.readonly","https://www.googleapis.com/auth/drive.metadata","https://www.googleapis.com/auth/drive.photos.readonly")
+	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserScope)
 	if err != nil {
 		return err
 	}
