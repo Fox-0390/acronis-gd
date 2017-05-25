@@ -1,43 +1,43 @@
-package admin_client
+package acronis_admin_client
 
 import (
 	"google.golang.org/api/admin/directory/v1"
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"context"
-	"fmt"
 )
 
-var service *admin.Service
+type AdminClient struct {
+	s *admin.Service
+}
 
-func Init() error {
+func Init() (*AdminClient, error) {
+	client := AdminClient{}
+
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile("./Acronis-data-backup-58ecc97b43ae.json")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserScope)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data.Subject = "admin@dkudinov.com"
 
-	service, err = admin.New(data.Client(ctx))
+	client.s, err = admin.New(data.Client(ctx))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &client, nil
 }
 
-func GetListOfUsers() (*admin.Users, error) {
-	if service == nil {
-		return nil, fmt.Errorf("Service not initialized. Call admin_client.Init() first.")
-	}
-	usersListCall := service.Users.List()
+func (c *AdminClient) GetListOfUsers() (*admin.Users, error) {
+	usersListCall := c.s.Users.List()
 	usersListCall = usersListCall.Domain("dkudinov.com")
 	usersListCall = usersListCall.Projection("full")
 
