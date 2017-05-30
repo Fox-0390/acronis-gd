@@ -16,7 +16,7 @@ func Init() (*AdminClient, error) {
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("./Acronis-data-backup-58ecc97b43ae.json")
+	b, err := ioutil.ReadFile("./marketplace-test-app-fdd851a5bf90.json")
 	if err != nil {
 		return nil, err
 	}

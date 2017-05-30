@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "marketplace-test-app",
+  "private_key_id": "fdd851a5bf909fdf3a1da31f1e2f11126c8f3478",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCxDG3sxehOjBX6\n3njiojcGug/9qo9W0nad6mJV90c6geiMpL+f34D6AdrG2i5hJHkruZf+09P9Ppet\naCP2BFJ4gJY3eBhCEoU3c0iu85DieymLCp4am4CZiVY12Utgwo420RfpnYqGUlEu\nj1cznYF6VmEjcoknMGuYfY//EwzOZZ1RyQu98KVp9IQR5yn8C7Nz9OiFRNsRyi6X\nBVHrj0gdkxjLc0DZzJLvAZFPoBq1xx2d2dBXLlrn4qcHcUNGae4190Kl9CZEBYei\nWbxg23UhpbllCUxID21lGLfoioNEBqKOt6FkadRbxENjNnCFcaH1KjZyAIpOIdXs\nmSO22U4NAgMBAAECgf8Wb9+NCHG1DY9jwtUv8hWguaM3NaRpt8X4uZpzjFuMyR0D\nkUsPUxuMk2ZzJKhOT4CH978NP3qaZoPSVRN7bh9r3N/cIGcP20Gu5jK56pHGBKnV\nDqui5sjlW88JyXTk7zC3jn7jWm8ouy/tq6Mb8miec8j46+Zfy4w9kCESRI6gZhGQ\n8oZ6McHM1BFpVp2cRE3opycMW2fyr2i82D+TBmhH0RnsfzAeqq9aqAmDJwrVXLRq\nWrTJN35fc6tz70AagRkCskwjJ2v2Mo2mxwdJ/O5A8O0x5a1rsGDaTtPlPWxg/3vq\nMyLaOq+U25vgXE4kVPetkI+k0jVMQf80v+vyh9cCgYEA3rEkfld3AU+SrjaNE3SU\nOjHRRky0ZEzruQRxeWqDCviX1u2pF/K1xc73ukprAdDw9BVV4UiCPROY6RcdZ4mQ\n3XCJmCiK0U4BueLYWPLk41K0mcFy7IzGBKXDKoBtiraPWqpU9G6d1igzSrfznlGg\neBI36k6QE0mYtvXMOnuDLzcCgYEAy4easxTRvzNo2baNnWpL2F2kq+fjyl8llt8k\n69r809CVuOwe8wBb3U5EhqsbwPdJ2wcXUinFTV5bN2uAsoSBITmU8c3UhNu2BF84\nYz5DSwagHgCC+lz5m3uU8gtBy+CaETtP5iannkzPYnk58qXT6FCZnKuG0zCnfD96\noMWwZtsCgYEAk9CHRalu35re5O5mtAxEu2AH5h7R+mWobbXKUGpnsyeROeOkwrWi\n/DrF6oys/Jag6ZMj3xaPBFV2wPlL1kbUtneVjT8T7ZxWvvkY2+nWDiH+qLRkQSmr\n4rfYlOSMUW+eNfMr0td9wwIKEcWKWoMZ/bkyDj+5mGPYj1EWD5eeWv8CgYEAyLwU\nwr0s5XQR3HAlGfVlmp85M2cBDm5rB3NL2ebg5xPZJ0qSd76J3Co+gcevFtGOoRxM\nTvftpZIDSxSXGPqA1UESeq40BVkhGwzC83bMLen57703cTBT6pqnW1Xo7ei2a3ph\nIjBLr2A4RfokQgJ1jrI33wJ5dj+NYIjHLFvt0HMCgYEA3gY0hbxayoucgYVvBfKG\n9somdEJ0M8jvu14dEb7UabHWj+gimxTptYYphPnlouzw01gve0068jH7a736Fsr+\nSiMJKgCsO+HH/94S7CG3WTk+D1OI3WEJH/DiUDh49O66bilUAFrnAHK/awwaaPbl\n1K2XntGVOg510dchwH231vo=\n-----END PRIVATE KEY-----\n",
+  "client_email": "denis-service-account@marketplace-test-app.iam.gserviceaccount.com",
+  "client_id": "101275612423755689023",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/denis-service-account%40marketplace-test-app.iam.gserviceaccount.com"
+}

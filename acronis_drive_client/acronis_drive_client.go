@@ -18,7 +18,7 @@ func Init(subject string) (*DriveClient, error) {
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("./Acronis-data-backup-db3941030528.json")
+	b, err := ioutil.ReadFile("./marketplace-test-app-fdd851a5bf90.json")
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,11 @@ var exportableMimeTypes = []string{
 
 func exportMimeTypeForMimeType(mimeType string) string {
 	switch mimeType {
+	case "application/vnd.google-apps.document":
+		fallthrough
 	case "application/vnd.google-apps.drawing":
+		fallthrough
+	case "application/vnd.google-apps.script":
 		return "application/pdf"
 	}
 	logger.Logf(logger.LogLevelError, "No export mime type found for %s", mimeType)
