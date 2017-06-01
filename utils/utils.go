@@ -72,3 +72,7 @@ func IsFileExists(path string) (bool, error) {
 	if os.IsNotExist(err) { return false, nil }
 	return true, err
 }
+
+func RemoveFile(path string) error {
+	return os.Remove(path)
+}

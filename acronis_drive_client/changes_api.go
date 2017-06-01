@@ -5,7 +5,6 @@ import (
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"bytes"
 	"io/ioutil"
-	"github.com/kudinovdenis/logger"
 	"google.golang.org/api/drive/v3"
 )
 
@@ -30,8 +29,6 @@ func (c *DriveClient) SaveChangesToken(path string, token string) error {
 	if err != nil {
 		return err
 	}
-
-	logger.Logf(logger.LogLevelDefault, "TOKEN: %#v", b)
 
 	return utils.CreateFileWithReader(path, bytes.NewReader(b))
 }

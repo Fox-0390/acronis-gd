@@ -47,11 +47,22 @@ func (c *DriveClient) ListAllFiles() ([]*drive.File, error) {
 
 	filesRes, err := list.Do()
 	if err != nil {
-		logger.Log(logger.LogLevelError, err.Error())
 		return nil, err
 	}
 
 	return filesRes.Files, nil
+}
+
+func (c *DriveClient) GetFileInfo(id string) (*drive.File, error) {
+	req := c.s.Files.Get(id)
+	req.Fields("id,name,mimeType,createdTime,modifiedTime,viewedByMeTime,trashed,starred,parents,properties,appProperties")
+
+	file, err := req.Do()
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
 
 func (c *DriveClient) GetFileWithReader(file drive.File) (io.ReadCloser, error) {
