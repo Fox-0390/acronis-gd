@@ -6,6 +6,7 @@ import (
 	"google.golang.org/api/admin/directory/v1"
 	"sync"
 	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
 	"net/http"
 )
 
@@ -99,11 +100,16 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	n := negroni.Classic()
+
 	r := mux.NewRouter()
 	r.HandleFunc("/client", clientHandler).Methods("GET")
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
-	logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", r).Error())
+
+	n.UseHandler(r)
+
+	logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", n).Error())
 }
 
 
