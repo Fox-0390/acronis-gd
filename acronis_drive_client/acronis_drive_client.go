@@ -7,10 +7,13 @@ import (
 	"context"
 	"github.com/kudinovdenis/logger"
 	"io"
+	"encoding/json"
+	"bytes"
 )
 
 type DriveClient struct {
 	s *drive.Service
+	currentUserID string
 }
 
 func Init(subject string) (*DriveClient, error) {
@@ -40,6 +43,7 @@ func Init(subject string) (*DriveClient, error) {
 
 func (c *DriveClient) ListAllFiles() ([]*drive.File, error) {
 	list := c.s.Files.List()
+	list = list.Fields("files(id,name,mimeType,createdTime,modifiedTime,viewedByMeTime,trashed,starred,parents,properties,appProperties)")
 
 	filesRes, err := list.Do()
 	if err != nil {
@@ -67,53 +71,28 @@ func (c *DriveClient) downloadFileWithReader(file drive.File) (io.ReadCloser, er
 	return res.Body, nil
 }
 
+// Metadata
+
+func (c* DriveClient) DownloadMetadata(file drive.File) (io.Reader, error) {
+	b, err := json.Marshal(file)
+	if err != nil {
+		return nil, err
+	}
+	buff := bytes.NewReader(b)
+	return buff, nil
+}
+
+// Support
+
 func (c *DriveClient) exportFileWithReader(file drive.File) (io.ReadCloser, error) {
-	logger.Logf(logger.LogLevelDefault, "Exporting file: %#v", file)
-	res, err := c.s.Files.Export(file.Id, exportMimeTypeForMimeType(file.MimeType)).Download()
+	exportedMimeType := exportMimeTypeForMimeType(file.MimeType)
+	logger.Logf(logger.LogLevelDefault, "Exporting %s (mime type: %s) with mime-type %s", file.Name, file.MimeType, exportedMimeType)
+	res, err := c.s.Files.Export(file.Id, exportedMimeType).Download()
 	if err != nil {
 		return nil, err
 	}
 
 	return res.Body, nil
-}
-
-func (c *DriveClient) GetFile(file drive.File) ([]byte, error) {
-	if isExportable(file) {
-		return c.exportFile(file)
-	} else {
-		return c.downloadFile(file)
-	}
-}
-
-func (c *DriveClient) downloadFile(file drive.File) ([]byte, error) {
-	res, err := c.s.Files.Get(file.Id).Download()
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	return b, nil
-}
-
-func (c *DriveClient) exportFile(file drive.File) ([]byte, error) {
-	logger.Logf(logger.LogLevelDefault, "Exporting file: %#v", file)
-	res, err := c.s.Files.Export(file.Id, exportMimeTypeForMimeType(file.MimeType)).Download()
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	return b, nil
 }
 
 /*
@@ -140,7 +119,7 @@ var exportableMimeTypes = []string{
 	"application/vnd.google-apps.document",
 	"application/vnd.google-apps.drawing",
 	"application/vnd.google-apps.file",
-	"application/vnd.google-apps.folder",
+	//"application/vnd.google-apps.folder",
 	"application/vnd.google-apps.form",
 	"application/vnd.google-apps.fusiontable",
 	"application/vnd.google-apps.map",
@@ -159,9 +138,13 @@ func exportMimeTypeForMimeType(mimeType string) string {
 	case "application/vnd.google-apps.document":
 		fallthrough
 	case "application/vnd.google-apps.drawing":
-		fallthrough
-	case "application/vnd.google-apps.script":
 		return "application/pdf"
+	case "application/vnd.google-apps.spreadsheet":
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	case "application/vnd.google-apps.script":
+		return "application/vnd.google-apps.script+json"
+	case "application/vnd.google-apps.folder":
+		return "application/vnd.google-apps.folder"
 	}
 	logger.Logf(logger.LogLevelError, "No export mime type found for %s", mimeType)
 	return ""

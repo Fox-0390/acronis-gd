@@ -22,7 +22,7 @@ func CreateFile(path string, content []byte) error {
 	return err
 }
 
-func CreateFileWithReader(path string, closer io.ReadCloser) error {
+func CreateFileWithReader(path string, closer io.Reader) error {
 	fo, err := os.Create(path)
 	if err != nil {
 		return err
@@ -60,4 +60,8 @@ func CreateFileWithReader(path string, closer io.ReadCloser) error {
 	}
 
 	return nil
+}
+
+func ReadFile(path string) (io.Reader, error) {
+	return os.Open(path)
 }
