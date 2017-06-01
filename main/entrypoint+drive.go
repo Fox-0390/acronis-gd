@@ -10,7 +10,6 @@ import (
 )
 
 func backupUserGoogleDrive(user *admin.User) {
-	utils.CreateDirectory(user.Id)
 	emails := user.Emails.([]interface{})
 
 	for _, email := range emails {
@@ -63,12 +62,11 @@ func processChanges(user *admin.User, email string, drive_client *acronis_drive_
 
 	for _, change := range changes.Changes {
 		logger.Logf(logger.LogLevelDefault, "Processing change: %#v", change)
-		logger.Logf(logger.LogLevelDefault, "File: %#v", change.File)
 		if change.Type == "file" {
-			file := change.File
+			fileID := change.FileId
 
-			filePath := path.Join(userEmailDirectoryPath, file.Id)
-			fileMetaPath := path.Join(userEmailDirectoryPath, file.Id + "_meta.json")
+			filePath := path.Join(userEmailDirectoryPath, fileID)
+			fileMetaPath := path.Join(userEmailDirectoryPath, fileID + "_meta.json")
 
 			logger.Logf(logger.LogLevelDefault, "FILE PATH: %s, FILEMETAPATH: %s", filePath, fileMetaPath)
 
@@ -83,8 +81,8 @@ func processChanges(user *admin.User, email string, drive_client *acronis_drive_
 			}
 
 			// If file is not removed
-			if !change.Removed {
-				file_info, err := drive_client.GetFileInfo(file.Id)
+			if change.File != nil && !change.Removed && !change.File.Trashed {
+				file_info, err := drive_client.GetFileInfo(fileID)
 				if err != nil {
 					processError(err)
 				}
@@ -146,7 +144,7 @@ func fullBackup(user *admin.User, email string, drive_client *acronis_drive_clie
 }
 
 func backupFile(user *admin.User, email string, file *drive.File, drive_client *acronis_drive_client.DriveClient) error {
-	logger.Logf(logger.LogLevelDefault, "File: %s %s", file.Name, file.MimeType)
+	logger.Logf(logger.LogLevelDefault, "Backing up file: %s %s", file.Name, file.MimeType)
 	// Save metadata
 	file_meta, err := drive_client.DownloadMetadata(*file)
 	if err != nil {

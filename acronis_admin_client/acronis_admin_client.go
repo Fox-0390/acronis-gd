@@ -9,9 +9,10 @@ import (
 
 type AdminClient struct {
 	s *admin.Service
+	domain string
 }
 
-func Init() (*AdminClient, error) {
+func Init(domain string) (*AdminClient, error) {
 	client := AdminClient{}
 
 	ctx := context.Background()
@@ -33,12 +34,14 @@ func Init() (*AdminClient, error) {
 		return nil, err
 	}
 
+	client.domain = domain
+
 	return &client, nil
 }
 
 func (c *AdminClient) GetListOfUsers() (*admin.Users, error) {
 	usersListCall := c.s.Users.List()
-	usersListCall = usersListCall.Domain("dkudinov.com")
+	usersListCall = usersListCall.Domain(c.domain)
 	usersListCall = usersListCall.Projection("full")
 
 	res, err := usersListCall.Do()

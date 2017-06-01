@@ -5,12 +5,36 @@ import (
 	"github.com/kudinovdenis/logger"
 	"google.golang.org/api/admin/directory/v1"
 	"sync"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 var errors = []error{}
 
-func main() {
-	admin_client, err := acronis_admin_client.Init()
+func clientHandler(rw http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+
+	if domain == "" {
+		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+		return
+	}
+
+	rw.Write(
+		[]byte(
+			"<h1>Improvised Admin Panel</h1>" +
+			"<div><a href=\"/backup?domain=" + domain + "\">backup now</a></div>" +
+			"<div><a href=\"/users?domain=" + domain + "\">show users</a></div>"))
+}
+
+func backupHandler(rw http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+
+	if domain == "" {
+		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+		return
+	}
+
+	admin_client, err := acronis_admin_client.Init(domain)
 	if err != nil {
 		logger.Logf(logger.LogLevelDefault, "Cant initialize admin client. %s", err.Error())
 		return
@@ -35,6 +59,49 @@ func main() {
 
 	group.Wait()
 	logger.Logf(logger.LogLevelDefault, "Errors: %d. %#v", len(errors), errors)
+}
+
+func usersHandler(rw http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+
+	if domain == "" {
+		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+		return
+	}
+
+	admin_client, err := acronis_admin_client.Init(domain)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		logger.Logf(logger.LogLevelDefault, "Cant initialize admin client. %s", err.Error())
+		return
+	}
+
+	users, err := admin_client.GetListOfUsers()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		logger.Logf(logger.LogLevelDefault, "Error while getting list of users: %s", err.Error())
+		return
+	}
+
+	htmlListOfUsers := "<div><ul>"
+	for _, user := range users.Users {
+		htmlListOfUsers += "<li>" + "ID: " + user.Id + " Name: " + user.Name.FullName + "</li>"
+	}
+	htmlListOfUsers += "</ul></div>"
+
+	rw.Write(
+		[]byte(
+			"<h1>Improvised Admin Panel</h1>" +
+			"<h2>Users</h2>" +
+			htmlListOfUsers))
+}
+
+func main() {
+	r := mux.NewRouter()
+	r.HandleFunc("/client", clientHandler).Methods("GET")
+	r.HandleFunc("/backup", backupHandler).Methods("GET")
+	r.HandleFunc("/users", usersHandler).Methods("GET")
+	logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", r).Error())
 }
 
 
