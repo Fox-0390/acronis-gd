@@ -10,7 +10,6 @@ import (
 var errors = []error{}
 
 func main() {
-
 	admin_client, err := acronis_admin_client.Init()
 	if err != nil {
 		logger.Logf(logger.LogLevelDefault, "Cant initialize admin client. %s", err.Error())
