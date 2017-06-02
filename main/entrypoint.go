@@ -24,8 +24,8 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(
 		[]byte(
 			"<h1>Improvised Admin Panel</h1>" +
-			"<div><a href=\"/backup?domain=" + domain + "\">backup now</a></div>" +
-			"<div><a href=\"/users?domain=" + domain + "\">show users</a></div>" +
+			"<div><a href=\"/backup?domain=" + domain + "&admin_email=" + admin_email + "\">backup now</a></div>" +
+			"<div><a href=\"/users?domain=" + domain + "&admin_email=" + admin_email + "\">show users</a></div>" +
 			"<br><br><br><br><br><br><br><br><br><br><br><br>" +
 			"<div><a href=\"http://cs6.pikabu.ru/post_img/2015/06/09/10/1433867902_2044988577.jpg\">\"Не быть тебе дизайнером\"</a></div>"))
 }
