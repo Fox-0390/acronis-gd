@@ -12,8 +12,10 @@ import (
 )
 
 const (
+	GOOGLE_CHECK_OAUTH_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
 	SERVER_URL = "http://dkudinov.com:8989"
 	CLIENT_ID = "951874456850-b8aub59nuf4kfhupla5t1278jd5gq6hf.apps.googleusercontent.com"
+	CLIENT_SECRET = "iFeQXiUoVo8msuRQH5yes7Vr"
 	REDIRECT_URL = SERVER_URL + "/oauth2callback"
 )
 
@@ -132,28 +134,6 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 			"<h1>Improvised Admin Panel</h1>" +
 			"<h2>Users</h2>" +
 			htmlListOfUsers))
-}
-
-func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
-	domain := r.URL.Query().Get("domain")
-
-	if domain == "" {
-		http.Error(rw, "Must provide domain name.", http.StatusBadRequest)
-		return
-	}
-
-	redirectURL := "https://accounts.google.com/o/oauth2/auth?client_id=" +
-		CLIENT_ID +
-		"&response_type=code&scope=openid%20email&redirect_uri=" +
-		REDIRECT_URL +
-		"&openid.realm=" +
-		REDIRECT_URL + "&domain=" + domain
-
-	http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
-}
-
-func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
-	logger.Logf(logger.LogLevelDefault, "Received OAuth2 callback with request: %#v", r)
 }
 
 func main() {
