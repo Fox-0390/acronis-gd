@@ -12,22 +12,23 @@ type AdminClient struct {
 	domain string
 }
 
-func Init(domain string) (*AdminClient, error) {
+func Init(domain string, admin_email string) (*AdminClient, error) {
+
 	client := AdminClient{}
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("./marketplace-test-app-fdd851a5bf90.json")
+	b, err := ioutil.ReadFile("./Acronis-backup-project-8b80e5be7c37.json")
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserScope)
+	data, err := google.JWTConfigFromJSON(b, admin.AdminDirectoryUserReadonlyScope)
 	if err != nil {
 		return nil, err
 	}
 
-	data.Subject = "admin@dkudinov.com"
+	data.Subject = admin_email
 
 	client.s, err = admin.New(data.Client(ctx))
 	if err != nil {

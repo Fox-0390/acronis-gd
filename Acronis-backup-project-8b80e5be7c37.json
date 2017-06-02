@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "acronis-backup-project",
+  "private_key_id": "8b80e5be7c37096bafc5eab83b17ae196dc72984",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC1rlWS0/UHaiFV\nxaYNYJ9YMVf0z4GwjWyVusK7TpaYAGCJKvkfviConum4wSqCaVbAOSf7xq7dim/o\nzpEovVGiYFB+f8Jcaeo7J2IbOLC0jgC1D+2X0NdI3NTm+HukItR/AIoA3+MT0Zc6\nkMI+QBNxmTu44Cmd0NmAkxALesEglLjIayeCMQDVqKE0cgykoM9qmKHsaVVbg7pp\nEtZOAWDnIoznu9f0xgp5uPwpdYspNttleIrZlz130V5RhA0Sc4hEAf7tcYgO/VQ5\ncJGeiccV31UMc7bSlt1fPL3qP0Q6kfem6M1JwR2NGU0S8Pnsj0wpsfKNd/Za/57o\n3pc08HR5AgMBAAECggEAEQEAydX0Ji5A8fPmc3SSXVD69DLypqlJ2yaoYJr9nbrV\nTik7OUUUbeu3oL7VgXCl+aYvz5D8H0h8alvg+qDjcdDVX82JzZftH/2y4SzYXwG2\nX7vepxmY+J0QgRCLE+TdoghVIjlSGbIBVy4iu+xH1Zc7n3U9d+OK481/0C88QZX5\naJ9j5z40ki+o5Oof0rBLdikRpIQVOmxiW2S/s3IQYMARnOEChNrthntgY/O+tSj7\ndAgGEAZQHTzJqRKBduhlG8yqRJqM5WoNt1/gw71YYKDmogOEoi01KK63JXuyVqCG\nNzYMOvS5+kDvOd2TOwIN7zfXZZs/glC+Vcoso8nroQKBgQDbDvzNJbx87F0WRnmF\nw1NNBk/ntZn4flDK2g7PWfemP4U0NYpBYvknOdaw0T/rL3jipB967zhF4w91feI9\nY7uMEAwnBLJKBB4tv1B1ViMCS1D8Mpy6g525pJCNOo3A92RapX555ZrIPgkMLm0f\nt5xup/ZaX2UJSxvExZOr1AjiMQKBgQDUUbbeY2uqHW9ZXVflE4cJW7zAiJqOX5wZ\ne0p5XX6byb8omOAiNDV73LD6T23DlKDDEkaJqy/6B+7PwmtaswNRiP893sI/U8wq\nTzIae7YtdN7IamXHuRrT3xJo1Y4GAjtXNm4oUbbrxN4ruEW+qEvBatQ0ITvlU+jg\nAseZYPGcyQKBgD+xEOHY+f/cfYhPf1/cFelMT4lQbO8qUvVYB3xUbUQCLgmrE4LF\ncynrkDei75HDIMPM8nY8/cCcL097BX/R8qLbu5zQqcIJhnjIqm0jWVR+b5KUaKt2\nPzLN3VWi07pqc9xDSA3LK4DTQLAxA3t4WFx4K5HFMMxN8Un6JGCOavLRAoGBAIBm\n0qL3mVsN5hMzYj6Farr8IdCGTIIhzDOU3ls7caAhiFuy6ImG7Xl05ArdElKfhgGz\nAbmsL52UQpaey3HUpQMgSMxP9UV7FhPYRULC4k/nR/wIbHk2tsS/OVDxJaz4mI6L\nul7j3C4Fpx7lmDhPa1ETnDXSi3iLIGCpDbDycewRAoGBAJTXFx3OPYb1Z2IVZ0be\nrUIv6P3cZGAQDUVpx/pK6+/VPGJ+kMA0uyZrcWIp5U9ZEVFPPpBmO8FULEoqf9Dz\nBlTtlrFqMFyBa4RdJCuH/Us2l9x+P5mXwdgDXEeVNmZ2nUcLrstqH+WcQfsfBMlB\n4TbDvOP9UuXIolO6ere0Iz+n\n-----END PRIVATE KEY-----\n",
+  "client_email": "service-account-manually-creat@acronis-backup-project.iam.gserviceaccount.com",
+  "client_id": "102814515812506786101",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account-manually-creat%40acronis-backup-project.iam.gserviceaccount.com"
+}

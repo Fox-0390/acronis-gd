@@ -21,12 +21,12 @@ func Init(subject string) (*DriveClient, error) {
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("./marketplace-test-app-fdd851a5bf90.json")
+	b, err := ioutil.ReadFile("./Acronis-backup-project-8b80e5be7c37.json")
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := google.JWTConfigFromJSON(b, drive.DriveScope,drive.DriveAppdataScope,drive.DriveFileScope,drive.DriveMetadataScope,drive.DriveMetadataReadonlyScope,drive.DrivePhotosReadonlyScope,drive.DriveReadonlyScope,drive.DriveScriptsScope)
+	data, err := google.JWTConfigFromJSON(b, drive.DriveScope)
 	if err != nil {
 		return nil, err
 	}

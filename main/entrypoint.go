@@ -14,9 +14,10 @@ var errors = []error{}
 
 func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
+	admin_email := r.URL.Query().Get("admin_email")
 
-	if domain == "" {
-		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+	if domain == "" || admin_email == "" {
+		http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
 		return
 	}
 
@@ -31,13 +32,14 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 
 func backupHandler(rw http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
+	admin_email := r.URL.Query().Get("admin_email")
 
-	if domain == "" {
-		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+	if domain == "" || admin_email == "" {
+		http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
 		return
 	}
 
-	admin_client, err := acronis_admin_client.Init(domain)
+	admin_client, err := acronis_admin_client.Init(domain, admin_email)
 	if err != nil {
 		logger.Logf(logger.LogLevelDefault, "Cant initialize admin client. %s", err.Error())
 		return
@@ -66,13 +68,14 @@ func backupHandler(rw http.ResponseWriter, r *http.Request) {
 
 func usersHandler(rw http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
+	admin_email := r.URL.Query().Get("admin_email")
 
-	if domain == "" {
-		http.Error(rw, "Must provide domain.", http.StatusBadRequest)
+	if domain == "" || admin_email == "" {
+		http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
 		return
 	}
 
-	admin_client, err := acronis_admin_client.Init(domain)
+	admin_client, err := acronis_admin_client.Init(domain, admin_email)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		logger.Logf(logger.LogLevelDefault, "Cant initialize admin client. %s", err.Error())
@@ -88,6 +91,7 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 
 	htmlListOfUsers := "<div><ul>"
 	for _, user := range users.Users {
+		logger.Logf(logger.LogLevelDefault, "users: %#v", user)
 		htmlListOfUsers += "<li>" + "ID: " + user.Id + " Name: " + user.Name.FullName + "</li>"
 	}
 	htmlListOfUsers += "</ul></div>"
