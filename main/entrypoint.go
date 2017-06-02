@@ -8,9 +8,34 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"net/http"
+	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
 )
 
 var errors = []error{}
+
+func GmailToGmail() {
+	
+	gb, err := acronis_gmail.Init("ao@dkudinov.com")
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Failed to Create service backup ao, err: %v", err.Error())
+	}
+	
+	err = gb.Backup("ao@dkudinov.com")
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Failed to backup, err: %v", err.Error())
+	}
+	
+	gr, err := acronis_gmail.Init("to@dkudinov.com")
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Failed to Create service backup to, err: %v", err.Error())
+	}
+	err = gr.Restore("to@dkudinov.com", "./ao@dkudinov.com/backup/")
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Failed to resotre, err: %v", err.Error())
+	}
+	
+}
+
 
 func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
