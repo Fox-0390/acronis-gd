@@ -13,7 +13,6 @@ type AdminClient struct {
 }
 
 func Init(domain string, admin_email string) (*AdminClient, error) {
-
 	client := AdminClient{}
 
 	ctx := context.Background()

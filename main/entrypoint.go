@@ -10,6 +10,12 @@ import (
 	"net/http"
 )
 
+const (
+	SERVER_URL = "http://dkudinov.com:8989"
+	CLIENT_ID = "951874456850-b8aub59nuf4kfhupla5t1278jd5gq6hf.apps.googleusercontent.com"
+	REDIRECT_URL = SERVER_URL + "/oauth2callback"
+)
+
 var errors = []error{}
 
 func clientHandler(rw http.ResponseWriter, r *http.Request) {
@@ -103,13 +109,40 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 			htmlListOfUsers))
 }
 
+func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+
+	if domain == "" {
+		http.Error(rw, "Must provide domain name.", http.StatusBadRequest)
+		return
+	}
+
+	redirectURL := "https://accounts.google.com/o/oauth2/auth?client_id=" +
+		CLIENT_ID +
+		"&response_type=code&scope=openid%20email&redirect_uri=" +
+		REDIRECT_URL +
+		"&openid.realm=" +
+		REDIRECT_URL + "&domain=" + domain
+
+	http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
+}
+
+func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
+	logger.Logf(logger.LogLevelDefault, "Received OAuth2 callback with request: %#v", r)
+}
+
 func main() {
 	n := negroni.Classic()
 
 	r := mux.NewRouter()
+	// Main admin panel
 	r.HandleFunc("/client", clientHandler).Methods("GET")
+	// Methods
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
+	// Registration / authorization flow
+	r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
+	r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
 
 	n.UseHandler(r)
 
