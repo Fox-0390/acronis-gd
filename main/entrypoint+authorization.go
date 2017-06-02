@@ -89,14 +89,10 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 
 	tokenString := token.IDToken
 
-	// Parse takes the token string and a function for looking up the key. The latter is especially
-	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-	// to the callback, providing flexibility.
 	parsed_token, err := jwt.Parse(tokenString, nil)
 
-	claims, err := parsed_token.Claims.(jwt.MapClaims)
-	if err != nil {
+	claims, ok := parsed_token.Claims.(jwt.MapClaims)
+	if !ok {
 		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
