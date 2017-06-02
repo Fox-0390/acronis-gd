@@ -7,6 +7,7 @@ import (
 	"github.com/kudinovdenis/logger"
 	"net/url"
 	"github.com/dgrijalva/jwt-go"
+	"bytes"
 )
 
 func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
@@ -39,20 +40,20 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 
 	code := u.Query().Get("code")
 
-	/// Verify code and get token
-
-	req, err := http.NewRequest("POST", GOOGLE_CHECK_OAUTH_TOKEN_URL, nil)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	data := url.Values{}
 	data.Set("code", code)
 	data.Add("grant_type", "authorization_code")
 	data.Add("client_id", CLIENT_ID)
 	data.Add("client_secret", CLIENT_SECRET)
 	data.Add("redirect_uri", REDIRECT_URL)
+
+	/// Verify code and get token
+
+	req, err := http.NewRequest("POST", GOOGLE_CHECK_OAUTH_TOKEN_URL, bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
