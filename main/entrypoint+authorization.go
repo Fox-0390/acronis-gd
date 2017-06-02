@@ -47,11 +47,12 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Form.Set("code", code)
-	req.Form.Set("grant_type", "authorization_code")
-	req.Form.Set("client_id", CLIENT_ID)
-	req.Form.Set("client_secret", CLIENT_SECRET)
-	req.Form.Set("redirect_uri", REDIRECT_URL)
+	data := url.Values{}
+	data.Set("code", code)
+	data.Add("grant_type", "authorization_code")
+	data.Add("client_id", CLIENT_ID)
+	data.Add("client_secret", CLIENT_SECRET)
+	data.Add("redirect_uri", REDIRECT_URL)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
