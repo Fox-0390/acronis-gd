@@ -92,9 +92,9 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := parsed_token.Claims.(jwt.MapClaims)
+	logger.Logf(logger.LogLevelDefault, "CLLAIMS! : %#v", parsed_token.Claims)
 
-	logger.Logf(logger.LogLevelDefault, "CLLAIMS! : %#v", claims)
+	claims := parsed_token.Claims.(jwt.MapClaims)
 
 	admin_email := claims["email"].(string)
 	domain := claims["hd"].(string)
