@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"github.com/kudinovdenis/logger"
 	"os"
-	"encoding/base64"
+	"encoding/json"
 )
 
 type GmailClient struct {
@@ -94,30 +94,14 @@ func (c *GmailClient) Backup(account string) (err error){
 			}
 			logger.Logf(logger.LogLevelDefault, "Message snippet : %s", m.Snippet)
 			
-			raw_message := m.Raw
+			marshalled, err := m.MarshalJSON()
 			pb := path_to_backup + m.Id
-			
-			rm, _ := base64.URLEncoding.DecodeString(raw_message)
-			
-			err = ioutil.WriteFile(pb, rm , 0777)
+
+			err = ioutil.WriteFile(pb, marshalled , 0777)
 			if err != nil {
 				logger.Logf(logger.LogLevelError, "Write to File failed, %v", err)
 				return err
 			}
-			
-			//payload := m.Payload
-			//
-			//msg_part_string, err := payload.MarshalJSON()
-			//logger.Logf(logger.LogLevelDefault, "Message payload marshalled: %s", msg_part_string)
-			//
-			//logger.Logf(logger.LogLevelDefault, "Message payload mimetype : %s", payload.MimeType)
-			//
-			//for i, part := range payload.Parts {
-			//	logger.Logf(logger.LogLevelDefault, "Message payloadpart [%v] mimetype : %s", i, part.MimeType)
-			//	pr, _ := base64.URLEncoding.DecodeString(part.Body.Data)
-			//	logger.Logf(logger.LogLevelDefault, "Message payloadpart [%v] body: %s", i, pr)
-			//	//logger.Logf(logger.LogLevelDefault, "Message payloadpart [%v] body : %s", i, part.Body.Data)
-			//}
 			
 			logger.Logf(logger.LogLevelDefault, "Ended message w/ ID : %v", mes.Id)
 		}
@@ -141,7 +125,7 @@ func (c *GmailClient) Restore(account string, pathToBackup string) (err error) {
 	}
 	for _, fi := range fi {
 		
-		if fi.IsDir() { //fi.Mode().IsRegular() {
+		if fi.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found dir: %v", fi.Name())
 			err = c.restoreThread(account, pathToBackup+fi.Name())
 			if err != nil {
@@ -168,7 +152,7 @@ func (c *GmailClient) restoreThread(account string, pathToThread string) (err er
 	}
 	for _, fi := range fi {
 		
-		if !fi.IsDir() { //fi.Mode().IsRegular() {
+		if !fi.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found file: %v", fi.Name())
 			err = c.restoreMessage(account, pathToThread+"/"+fi.Name())
 			if err != nil {
@@ -189,17 +173,32 @@ func (c *GmailClient) restoreMessage(account string, pathToMsg string) (err erro
 		return
 	}
 	
-	var msg = gmail.Message{}
-	msg.Raw = base64.URLEncoding.EncodeToString(raw)
+	var msg = &gmail.Message{}
 	
-	ic := c.s.Users.Messages.Insert(account, &msg)
-	m, err := ic.Do()
+	err = json.Unmarshal(raw, msg)
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Failed to unmarshal message path: %v, err: %v", pathToMsg, err.Error())
+		return err
+	}
+	
+	var m = &gmail.Message{}
+	m.Raw = msg.Raw
+	m.Payload = msg.Payload
+	m.SizeEstimate = msg.SizeEstimate
+	m.LabelIds = msg.LabelIds
+	m.Snippet = msg.Snippet
+	m.Header = msg.Header
+	m.InternalDate = msg.InternalDate
+	
+	ic := c.s.Users.Messages.Insert(account, m)
+	
+	res, err := ic.Do()
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to restore message path: %v, err: %v", pathToMsg, err.Error())
 		return err
 	}
 	
-	logger.Logf(logger.LogLevelDefault, "Inserted msg: %v", m)
+	logger.Logf(logger.LogLevelDefault, "Inserted msg: %v", res)
 	
 	return
 }
