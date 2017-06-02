@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"github.com/dgrijalva/jwt-go"
 	"bytes"
+	"fmt"
 )
 
 func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
@@ -86,15 +87,23 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 	token := CheckResult{}
 	json.Unmarshal(b, &token)
 
-	parsed_token, err := jwt.Parse(token.IDToken, checkToken)
+	tokenString := token.IDToken
+
+	// Parse takes the token string and a function for looking up the key. The latter is especially
+	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
+	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
+	// to the callback, providing flexibility.
+	parsed_token, err := jwt.Parse(tokenString, nil)
+
+	claims, err := parsed_token.Claims.(jwt.MapClaims)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
+
 	}
 
-	logger.Logf(logger.LogLevelDefault, "CLLAIMS! : %#v", parsed_token.Claims)
-
-	claims := parsed_token.Claims.(jwt.MapClaims)
+	logger.Logf(logger.LogLevelDefault, "CLAIMS! : %#v", claims)
 
 	admin_email := claims["email"].(string)
 	domain := claims["hd"].(string)
