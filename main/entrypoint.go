@@ -13,7 +13,6 @@ import (
 	"flag"
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"io/ioutil"
-	"github.com/kudinovdenis/acronis-gd/acronis_drive_client"
 )
 
 var errors = []error{}
