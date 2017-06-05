@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
 	"github.com/kudinovdenis/acronis-gd/config"
-	"flag"
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"io/ioutil"
 )
@@ -149,14 +148,11 @@ func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mode := flag.String("mode", "prod", "`debug` or `prod` mode")
-	flag.Parse()
-	err := config.PopulateConfigWithFile(*mode + ".json")
+	err := config.PopulateConfigWithFile("config.json")
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Cant read config file. %s", err.Error())
 		return
 	}
-	logger.Logf(logger.LogLevelDefault, "Mode: %s", *mode)
 	logger.Logf(logger.LogLevelDefault, "Config: %#v", config.Cfg)
 
 	n := negroni.Classic()
@@ -178,7 +174,7 @@ func main() {
 	if config.Cfg.UseLocalServer {
 		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(config.Cfg.Port, n).Error())
 	} else {
-		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "/etc/letsencrypt/live/dkudinov.com/cert.pem", "/etc/letsencrypt/live/dkudinov.com/privkey.pem", n))
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "./cert.pem", "./privkey.pem", n))
 	}
 }
 
