@@ -12,7 +12,6 @@ import (
 	"github.com/kudinovdenis/acronis-gd/config"
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"io/ioutil"
-	"github.com/kudinovdenis/acronis-gd/acronis_drive_client"
 )
 
 var errors = []error{}
@@ -160,20 +159,6 @@ func main() {
 		return
 	}
 	logger.Logf(logger.LogLevelDefault, "Config: %#v", config.Cfg)
-
-	test_drive_client, err := acronis_drive_client.Init("ramil.yusupov@trueimage.eu")
-	if err != nil {
-		logger.Logf(logger.LogLevelError, "Cant create test drive client. %s", err.Error())
-		return
-	}
-
-	channel, err := test_drive_client.SubscribeOnChanges()
-	if err != nil {
-		logger.Logf(logger.LogLevelError, "Cant subscribe. %s", err.Error())
-		return
-	}
-
-	logger.Logf(logger.LogLevelDefault, "CHANNEL: %#v", channel)
 
 	n := negroni.Classic()
 
