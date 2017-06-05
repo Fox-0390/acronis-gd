@@ -147,6 +147,11 @@ func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(b)
 }
 
+func testNotifyHandler(rw http.ResponseWriter, r *http.Request) {
+	logger.LogRequestToService(r, true)
+
+}
+
 func main() {
 	err := config.PopulateConfigWithFile("config.json")
 	if err != nil {
@@ -168,6 +173,8 @@ func main() {
 	r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
 	// Google domain verification
 	r.HandleFunc("/google7ded6bed08ed3c1b.html", googleDomainVerificationHandler).Methods("GET")
+	// Notifications
+	r.HandleFunc("/notify", testNotifyHandler)
 
 	n.UseHandler(r)
 
@@ -177,7 +184,6 @@ func main() {
 		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "./cert.pem", "./privkey.pem", n))
 	}
 }
-
 
 func processError(err error) {
 	logger.Logf(logger.LogLevelError, "Error: %#v", err.Error())
