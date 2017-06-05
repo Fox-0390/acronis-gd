@@ -41,6 +41,11 @@ func Init(subject string) (*DriveClient, error) {
 	return &client, nil
 }
 
+func (c *DriveClient) SubscribeOnChanges() (*drive.Channel, error) {
+	channel, err := c.s.Changes.Watch("299", &drive.Channel{Type:"web_hook", Address:"https://dkudinov.com/notify", Id:"123123123"}).Do()
+	return channel, err
+}
+
 func (c *DriveClient) ListAllFiles() ([]*drive.File, error) {
 	list := c.s.Files.List()
 	list = list.Fields("files(id,name,mimeType,createdTime,modifiedTime,viewedByMeTime,trashed,starred,parents,properties,appProperties)")

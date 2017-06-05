@@ -28,6 +28,8 @@ func backupUserGoogleDrive(user *admin.User) {
 			continue
 		}
 
+
+
 		if incrementalBackupNeeded {
 			logger.Logf(logger.LogLevelDefault, "Incremental backup for User: %+v started", email_string)
 			err := processChanges(user, email_string, drive_client)

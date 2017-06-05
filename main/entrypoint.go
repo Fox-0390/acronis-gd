@@ -13,6 +13,7 @@ import (
 	"flag"
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"io/ioutil"
+	"github.com/kudinovdenis/acronis-gd/acronis_drive_client"
 )
 
 var errors = []error{}
@@ -176,9 +177,9 @@ func main() {
 	n.UseHandler(r)
 
 	if config.Cfg.UseLocalServer {
-		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", n).Error())
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(config.Cfg.Port, n).Error())
 	} else {
-		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(":443", "/etc/letsencrypt/live/dkudinov.com/cert.pem", "/etc/letsencrypt/live/dkudinov.com/privkey.pem", n))
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "/etc/letsencrypt/live/dkudinov.com/cert.pem", "/etc/letsencrypt/live/dkudinov.com/privkey.pem", n))
 	}
 }
 
