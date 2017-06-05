@@ -9,14 +9,10 @@ import (
 	"github.com/urfave/negroni"
 	"net/http"
 	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
-)
-
-const (
-	GOOGLE_CHECK_OAUTH_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-	SERVER_URL = "http://dkudinov.com:8989"
-	CLIENT_ID = "951874456850-b8aub59nuf4kfhupla5t1278jd5gq6hf.apps.googleusercontent.com"
-	CLIENT_SECRET = "iFeQXiUoVo8msuRQH5yes7Vr"
-	REDIRECT_URL = SERVER_URL + "/oauth2callback"
+	"github.com/kudinovdenis/acronis-gd/config"
+	"flag"
+	"github.com/kudinovdenis/acronis-gd/utils"
+	"io/ioutil"
 )
 
 var errors = []error{}
@@ -136,7 +132,33 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 			htmlListOfUsers))
 }
 
+func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
+	reader, err := utils.ReadFile("./google7ded6bed08ed3c1b.html")
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rw.Write(b)
+}
+
 func main() {
+	mode := flag.String("mode", "prod", "`debug` or `prod` mode")
+	flag.Parse()
+	err := config.PopulateConfigWithFile(*mode + ".json")
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Cant read config file. %s", err.Error())
+		return
+	}
+	logger.Logf(logger.LogLevelDefault, "Mode: %s", *mode)
+	logger.Logf(logger.LogLevelDefault, "Config: %#v", config.Cfg)
+
 	n := negroni.Classic()
 
 	r := mux.NewRouter()
@@ -148,10 +170,16 @@ func main() {
 	// Registration / authorization flow
 	r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
 	r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
+	// Google domain verification
+	r.HandleFunc("/google7ded6bed08ed3c1b.html", googleDomainVerificationHandler).Methods("GET")
 
 	n.UseHandler(r)
 
-	logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", n).Error())
+	if config.Cfg.UseLocalServer {
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(":8989", n).Error())
+	} else {
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(":443", "/etc/letsencrypt/live/dkudinov.com/cert.pem", "/etc/letsencrypt/live/dkudinov.com/privkey.pem", n))
+	}
 }
 
 

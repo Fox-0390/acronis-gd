@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"bytes"
 	"fmt"
+	"github.com/kudinovdenis/acronis-gd/config"
 )
 
 func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
@@ -20,11 +21,11 @@ func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	redirectURL := "https://accounts.google.com/o/oauth2/auth?client_id=" +
-		CLIENT_ID +
+		config.Cfg.ClientID +
 		"&response_type=code&scope=openid%20email&redirect_uri=" +
-		REDIRECT_URL +
+		config.Cfg.OauthCallbackURL() +
 		"&openid.realm=" +
-		REDIRECT_URL + "&domain=" + domain
+		config.Cfg.OauthCallbackURL() + "&domain=" + domain
 
 	http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
 }
@@ -44,13 +45,13 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 	data := url.Values{}
 	data.Set("code", code)
 	data.Add("grant_type", "authorization_code")
-	data.Add("client_id", CLIENT_ID)
-	data.Add("client_secret", CLIENT_SECRET)
-	data.Add("redirect_uri", REDIRECT_URL)
+	data.Add("client_id", config.Cfg.ClientID)
+	data.Add("client_secret", config.Cfg.ClientSecret)
+	data.Add("redirect_uri", config.Cfg.OauthCallbackURL())
 
 	/// Verify code and get token
 
-	req, err := http.NewRequest("POST", GOOGLE_CHECK_OAUTH_TOKEN_URL, bytes.NewBufferString(data.Encode()))
+	req, err := http.NewRequest("POST", config.Cfg.GoogleCheckOauth2TokenURL, bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -107,10 +108,6 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 	logger.Logf(logger.LogLevelDefault, "Parsed from JWT: %s, %s", admin_email, domain)
 
 
-	redirect_url := SERVER_URL + "/client?domain=" + domain + "&admin_email=" + admin_email
+	redirect_url := config.Cfg.ServerURL + "/client?domain=" + domain + "&admin_email=" + admin_email
 	http.Redirect(rw, r, redirect_url, http.StatusMovedPermanently)
-}
-
-func checkToken(t *jwt.Token) (interface{}, error) {
-	return t, nil
 }

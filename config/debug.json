@@ -1,0 +1,8 @@
+{
+  "google_check_oauth2_token_url": "https://accounts.google.com/o/oauth2/token",
+  "server_url" : "https://dkudinov.com",
+  "client_id" : "951874456850-b8aub59nuf4kfhupla5t1278jd5gq6hf.apps.googleusercontent.com",
+  "client_secret" : "iFeQXiUoVo8msuRQH5yes7Vr",
+  "oauth2_callback_path" : "/oauth2callback",
+  "use_local_server" : true
+}
