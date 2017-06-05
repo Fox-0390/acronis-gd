@@ -21,7 +21,7 @@ func Init(subject string) (*GmailClient, error) {
 
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("./marketplace-test-app-fdd851a5bf90.json")
+	b, err := ioutil.ReadFile("../Acronis-backup-project-8b80e5be7c37.json")
 	if err != nil {
 		return nil, err
 	}
