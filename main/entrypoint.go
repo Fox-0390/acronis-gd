@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
 	"github.com/kudinovdenis/acronis-gd/config"
-	"flag"
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"io/ioutil"
 )
@@ -148,15 +147,17 @@ func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(b)
 }
 
+func testNotifyHandler(rw http.ResponseWriter, r *http.Request) {
+	logger.LogRequestToService(r, true)
+
+}
+
 func main() {
-	mode := flag.String("mode", "prod", "`debug` or `prod` mode")
-	flag.Parse()
-	err := config.PopulateConfigWithFile(*mode + ".json")
+	err := config.PopulateConfigWithFile("config.json")
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Cant read config file. %s", err.Error())
 		return
 	}
-	logger.Logf(logger.LogLevelDefault, "Mode: %s", *mode)
 	logger.Logf(logger.LogLevelDefault, "Config: %#v", config.Cfg)
 
 	n := negroni.Classic()
@@ -172,16 +173,17 @@ func main() {
 	r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
 	// Google domain verification
 	r.HandleFunc("/google7ded6bed08ed3c1b.html", googleDomainVerificationHandler).Methods("GET")
+	// Notifications
+	r.HandleFunc("/notify", testNotifyHandler)
 
 	n.UseHandler(r)
 
 	if config.Cfg.UseLocalServer {
 		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServe(config.Cfg.Port, n).Error())
 	} else {
-		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "/etc/letsencrypt/live/dkudinov.com/cert.pem", "/etc/letsencrypt/live/dkudinov.com/privkey.pem", n))
+		logger.Logf(logger.LogLevelError, "%s", http.ListenAndServeTLS(config.Cfg.Port, "./cert.pem", "./privkey.pem", n))
 	}
 }
-
 
 func processError(err error) {
 	logger.Logf(logger.LogLevelError, "Error: %#v", err.Error())

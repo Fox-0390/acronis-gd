@@ -42,7 +42,7 @@ func Init(subject string) (*DriveClient, error) {
 }
 
 func (c *DriveClient) SubscribeOnChanges() (*drive.Channel, error) {
-	channel, err := c.s.Changes.Watch("299", &drive.Channel{Type:"web_hook", Address:"https://dkudinov.com/notify", Id:"123123123"}).Do()
+	channel, err := c.s.Changes.Watch("299", &drive.Channel{Type:"web_hook", Address:"https://dkudinov.com/notify", Id:"1"}).Do()
 	return channel, err
 }
 
