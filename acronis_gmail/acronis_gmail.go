@@ -9,7 +9,38 @@ import (
 	"github.com/kudinovdenis/logger"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
+	"net/http"
+	"net/http/httputil"
 )
+
+type LoggingTransport struct {
+	delegate http.RoundTripper
+}
+
+func (transport *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	data, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		println("Error while reading request")
+		return nil, err
+	} else {
+		println(string(data))
+	}
+
+	response, err := transport.delegate.RoundTrip(req)
+	if err != nil {
+		return response, err
+	}
+
+	data, err = httputil.DumpResponse(response, true)
+	if err != nil {
+		println("Error while reading response")
+		return nil, err
+	} else {
+		println(string(data))
+	}
+
+	return response, nil
+}
 
 type GmailClient struct {
 	s             *gmail.Service
@@ -45,7 +76,11 @@ func Init(subject string) (*GmailClient, error) {
 
 	data.Subject = subject
 
-	client.s, err = gmail.New(data.Client(ctx))
+	dataClient := data.Client(ctx)
+	dataClient.Transport = &LoggingTransport{
+		dataClient.Transport,
+	}
+	client.s, err = gmail.New(dataClient)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "New Gmail failed, %v", err)
 		return nil, err
