@@ -64,17 +64,7 @@ func Init(subject string) (*GmailClient, error) {
 		return nil, err
 	}
 
-	data, err := google.JWTConfigFromJSON(b,
-		gmail.MailGoogleComScope,
-		gmail.GmailComposeScope,
-		gmail.GmailInsertScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-		gmail.GmailReadonlyScope,
-		gmail.GmailSendScope,
-		gmail.GmailSettingsBasicScope,
-		gmail.GmailSettingsSharingScope,
-	)
+	data, err := google.JWTConfigFromJSON(b, gmail.GmailModifyScope)
 
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "JWT Config failed, %v", err)
