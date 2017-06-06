@@ -31,7 +31,7 @@ func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
 
 	logger.Logf(logger.LogLevelDefault, "Redirecting to %s", redirectURL)
 
-	http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
+	http.Redirect(rw, r, redirectURL, http.StatusTemporaryRedirect)
 }
 
 func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
@@ -115,5 +115,5 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 
 	logger.Logf(logger.LogLevelDefault, "Redirecting to %s", redirect_url)
 
-	http.Redirect(rw, r, redirect_url, http.StatusMovedPermanently)
+	http.Redirect(rw, r, redirect_url, http.StatusTemporaryRedirect)
 }
