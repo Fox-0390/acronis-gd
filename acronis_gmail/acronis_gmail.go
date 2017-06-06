@@ -43,7 +43,7 @@ func (transport *LoggingTransport) RoundTrip(req *http.Request) (*http.Response,
 }
 
 type GmailClient struct {
-	s             *gmail.Service
+	service       *gmail.Service
 	currentUserID string
 }
 
@@ -80,7 +80,7 @@ func Init(subject string) (*GmailClient, error) {
 	dataClient.Transport = &LoggingTransport{
 		dataClient.Transport,
 	}
-	client.s, err = gmail.New(dataClient)
+	client.service, err = gmail.New(dataClient)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "New Gmail failed, %v", err)
 		return nil, err
@@ -89,9 +89,8 @@ func Init(subject string) (*GmailClient, error) {
 	return &client, nil
 }
 
-func (c *GmailClient) Backup(account string) (err error) {
-
-	threads, err := c.s.Users.Threads.List(account).Do()
+func (client *GmailClient) Backup(account string) (err error) {
+	threads, err := client.service.Users.Threads.List(account).Do()
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Threads List failed , %v", err)
 		return
@@ -110,7 +109,7 @@ func (c *GmailClient) Backup(account string) (err error) {
 			return
 		}
 
-		tc := c.s.Users.Threads.Get(account, thread.Id) //.Do()//service.Threads.Get(subject, thread.Id).Do()
+		tc := client.service.Users.Threads.Get(account, thread.Id) //.Do()//service.Threads.Get(subject, thread.Id).Do()
 		tc = tc.Format("metadata")
 		t, err := tc.Do()
 		if err != nil {
@@ -120,27 +119,9 @@ func (c *GmailClient) Backup(account string) (err error) {
 		logger.Logf(logger.LogLevelDefault, "Getted Thread Snippet : %s", t.Snippet)
 		logger.Logf(logger.LogLevelDefault, "Getted Thread Message Count %v", len(t.Messages))
 
-		for _, mes := range t.Messages {
-			logger.Logf(logger.LogLevelDefault, "Started message w/ ID : %v", mes.Id)
-			mc := c.s.Users.Messages.Get(account, mes.Id)
-			mc = mc.Format("raw")
-			m, err := mc.Do()
-			if err != nil {
-				logger.Logf(logger.LogLevelError, "Message Get failed , %v", err)
-				return err
-			}
-			logger.Logf(logger.LogLevelDefault, "Message snippet : %s", m.Snippet)
-
-			marshalled, err := m.MarshalJSON()
-			pb := pathToBackup + m.Id
-
-			err = ioutil.WriteFile(pb, marshalled, 0777)
-			if err != nil {
-				logger.Logf(logger.LogLevelError, "Write to File failed, %v", err)
-				return err
-			}
-
-			logger.Logf(logger.LogLevelDefault, "Ended message w/ ID : %v", mes.Id)
+		err = client.saveMessages(pathToBackup, account, t.Messages)
+		if err != nil {
+			return err
 		}
 		logger.Logf(logger.LogLevelDefault, "Ended thread w/ ID : %v", thread.Id)
 	}
@@ -148,7 +129,57 @@ func (c *GmailClient) Backup(account string) (err error) {
 	return
 }
 
-func (c *GmailClient) Restore(account string, pathToBackup string) (err error) {
+func (client *GmailClient) BackupIndividualMessages(account string) (err error) {
+	pathToBackup := "./" + account + "/backup/"
+	err = os.MkdirAll(pathToBackup, 0777)
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Directory create failed, %v", err)
+		return
+	}
+
+	messages, err := client.service.Users.Messages.List(account).Do()
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Message list Get failed , %v", err)
+		return err
+	}
+	logger.Logf(logger.LogLevelDefault, "Got Message Count %v", len(messages.Messages))
+
+	err = client.saveMessages(pathToBackup, account, messages.Messages)
+	if err != nil {
+		return err
+	}
+
+	return
+}
+
+func (client *GmailClient) saveMessages(pathToBackup, account string, messages []*gmail.Message) error {
+	for _, mes := range messages {
+		logger.Logf(logger.LogLevelDefault, "Started message w/ ID : %v", mes.Id)
+		mc := client.service.Users.Messages.Get(account, mes.Id)
+		mc = mc.Format("raw")
+		m, err := mc.Do()
+		if err != nil {
+			logger.Logf(logger.LogLevelError, "Message Get failed , %v", err)
+			return err
+		}
+		logger.Logf(logger.LogLevelDefault, "Message snippet : %s", m.Snippet)
+
+		marshalled, err := m.MarshalJSON()
+		pb := pathToBackup + m.Id
+
+		err = ioutil.WriteFile(pb, marshalled, 0777)
+		if err != nil {
+			logger.Logf(logger.LogLevelError, "Write to File failed, %v", err)
+			return err
+		}
+
+		logger.Logf(logger.LogLevelDefault, "Ended message w/ ID : %v", mes.Id)
+	}
+
+	return nil
+}
+
+func (client *GmailClient) Restore(account string, pathToBackup string) (err error) {
 	d, err := os.Open(pathToBackup)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Directory open failed, %v", err)
@@ -164,7 +195,7 @@ func (c *GmailClient) Restore(account string, pathToBackup string) (err error) {
 
 		if fi.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found dir: %v", fi.Name())
-			err = c.restoreThread(account, pathToBackup+fi.Name())
+			err = client.restoreThread(account, pathToBackup+fi.Name())
 			if err != nil {
 				logger.Logf(logger.LogLevelError, "Failed to restore thread if: %v, err: %v", fi.Name(), err.Error())
 			}
@@ -174,7 +205,11 @@ func (c *GmailClient) Restore(account string, pathToBackup string) (err error) {
 	return
 }
 
-func (c *GmailClient) restoreThread(account string, pathToThread string) (err error) {
+func (client *GmailClient) RestoreIndividualMessages(account, pathToBackup string) (error) {
+	return client.restoreThread(account, pathToBackup)
+}
+
+func (client *GmailClient) restoreThread(account string, pathToThread string) (err error) {
 	d, err := os.Open(pathToThread)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Directory open failed, %v", err)
@@ -190,7 +225,7 @@ func (c *GmailClient) restoreThread(account string, pathToThread string) (err er
 
 		if !fi.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found file: %v", fi.Name())
-			err = c.restoreMessage(account, pathToThread+"/"+fi.Name())
+			err = client.restoreMessage(account, pathToThread+"/"+fi.Name())
 			if err != nil {
 				logger.Logf(logger.LogLevelError, "Failed to restore thread id: %v, err: %v", fi.Name(), err.Error())
 				return
@@ -201,7 +236,7 @@ func (c *GmailClient) restoreThread(account string, pathToThread string) (err er
 	return
 }
 
-func (c *GmailClient) restoreMessage(account string, pathToMsg string) (err error) {
+func (client *GmailClient) restoreMessage(account string, pathToMsg string) (err error) {
 	raw, err := ioutil.ReadFile(pathToMsg)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to restore message path: %v, err: %v", pathToMsg, err.Error())
@@ -226,7 +261,7 @@ func (c *GmailClient) restoreMessage(account string, pathToMsg string) (err erro
 	m.InternalDate = msg.InternalDate
 	m.ThreadId = msg.ThreadId
 
-	ic := c.s.Users.Messages.Insert(account, m)
+	ic := client.service.Users.Messages.Insert(account, m)
 
 	res, err := ic.Do()
 	if err != nil {
