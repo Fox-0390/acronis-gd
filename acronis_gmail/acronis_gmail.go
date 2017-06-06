@@ -269,12 +269,7 @@ func (client *GmailClient) restoreMessage(account string, pathToMsg string) (err
 
 	var m = &gmail.Message{}
 	m.Raw = msg.Raw
-	m.Payload = msg.Payload
-	m.SizeEstimate = msg.SizeEstimate
 	m.LabelIds = msg.LabelIds
-	m.Snippet = msg.Snippet
-	m.Header = msg.Header
-	m.InternalDate = msg.InternalDate
 	m.ThreadId = msg.ThreadId
 
 	ic := client.service.Users.Messages.Insert(account, m)
