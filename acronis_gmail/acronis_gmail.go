@@ -224,6 +224,7 @@ func (c *GmailClient) restoreMessage(account string, pathToMsg string) (err erro
 	m.Snippet = msg.Snippet
 	m.Header = msg.Header
 	m.InternalDate = msg.InternalDate
+	m.ThreadId = msg.ThreadId
 
 	ic := c.s.Users.Messages.Insert(account, m)
 
