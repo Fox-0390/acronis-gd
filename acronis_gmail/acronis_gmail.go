@@ -11,6 +11,7 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"net/http"
 	"net/http/httputil"
+	"golang.org/x/oauth2"
 )
 
 type LoggingTransport struct {
@@ -50,7 +51,13 @@ type GmailClient struct {
 func Init(subject string) (*GmailClient, error) {
 	client := GmailClient{}
 
+	httpClient := &http.Client{}
+	httpClient.Transport = &LoggingTransport{
+		http.DefaultTransport,
+	}
+
 	ctx := context.Background()
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
 
 	b, err := ioutil.ReadFile("../Acronis-backup-project-8b80e5be7c37.json")
 	if err != nil {
@@ -76,11 +83,7 @@ func Init(subject string) (*GmailClient, error) {
 
 	data.Subject = subject
 
-	dataClient := data.Client(ctx)
-	dataClient.Transport = &LoggingTransport{
-		dataClient.Transport,
-	}
-	client.service, err = gmail.New(dataClient)
+	client.service, err = gmail.New(data.Client(ctx))
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "New Gmail failed, %v", err)
 		return nil, err
