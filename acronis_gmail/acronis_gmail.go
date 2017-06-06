@@ -137,16 +137,29 @@ func (client *GmailClient) BackupIndividualMessages(account string) (err error) 
 		return
 	}
 
-	messages, err := client.service.Users.Messages.List(account).Do()
-	if err != nil {
-		logger.Logf(logger.LogLevelError, "Message list Get failed , %v", err)
-		return err
-	}
-	logger.Logf(logger.LogLevelDefault, "Got Message Count %v", len(messages.Messages))
+	nextPageToken := ""
+	for {
+		listCall := client.service.Users.Messages.List(account)
+		if nextPageToken != "" {
+			listCall.PageToken(nextPageToken)
+		}
 
-	err = client.saveMessages(pathToBackup, account, messages.Messages)
-	if err != nil {
-		return err
+		messages, err := listCall.Do()
+		if err != nil {
+			logger.Logf(logger.LogLevelError, "Message list Get failed , %v", err)
+			return err
+		}
+		logger.Logf(logger.LogLevelDefault, "Got Message Count %v", len(messages.Messages))
+
+		err = client.saveMessages(pathToBackup, account, messages.Messages)
+		if err != nil {
+			return err
+		}
+
+		nextPageToken = messages.NextPageToken
+		if nextPageToken == "" {
+			break
+		}
 	}
 
 	return
@@ -205,7 +218,7 @@ func (client *GmailClient) Restore(account string, pathToBackup string) (err err
 	return
 }
 
-func (client *GmailClient) RestoreIndividualMessages(account, pathToBackup string) (error) {
+func (client *GmailClient) RestoreIndividualMessages(account, pathToBackup string) error {
 	return client.restoreThread(account, pathToBackup)
 }
 
