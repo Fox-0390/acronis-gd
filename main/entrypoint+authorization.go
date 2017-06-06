@@ -13,6 +13,8 @@ import (
 )
 
 func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
+	logger.LogRequestToService(r, true)
+
 	domain := r.URL.Query().Get("domain")
 
 	if domain == "" {
@@ -26,6 +28,8 @@ func authorizationHandler(rw http.ResponseWriter, r *http.Request) {
 		config.Cfg.OauthCallbackURL() +
 		"&openid.realm=" +
 		config.Cfg.OauthCallbackURL() + "&domain=" + domain
+
+	logger.Logf(logger.LogLevelDefault, "Redirecting to %s", redirectURL)
 
 	http.Redirect(rw, r, redirectURL, http.StatusMovedPermanently)
 }
@@ -107,7 +111,9 @@ func oauth2CallbackHandler(rw http.ResponseWriter, r *http.Request) {
 
 	logger.Logf(logger.LogLevelDefault, "Parsed from JWT: %s, %s", admin_email, domain)
 
-
 	redirect_url := config.Cfg.ServerURL + "/client?domain=" + domain + "&admin_email=" + admin_email
+
+	logger.Logf(logger.LogLevelDefault, "Redirecting to %s", redirect_url)
+
 	http.Redirect(rw, r, redirect_url, http.StatusMovedPermanently)
 }

@@ -18,7 +18,7 @@ type Config struct {
 var Cfg *Config = &Config{}
 
 func (config *Config) OauthCallbackURL() string {
-	return config.ServerURL + "/" + config.Oauth2CallbackPath
+	return config.ServerURL + config.Oauth2CallbackPath
 }
 
 func PopulateConfigWithFile(path string) error {
