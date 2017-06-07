@@ -92,7 +92,7 @@ func processChanges(userID string, email string, drive_client *acronis_drive_cli
 			if err != nil {
 				processError(err)
 			}
-			utils.RemoveFile(fileMetaPath)
+			err = utils.RemoveFile(fileMetaPath)
 			if err != nil {
 				processError(err)
 			}
