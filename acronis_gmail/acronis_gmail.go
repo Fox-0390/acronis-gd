@@ -127,6 +127,13 @@ func (client *GmailClient) Backup(account string) (err error) {
 
 func (client *GmailClient) BackupIndividualMessages(account string) (err error) {
 	pathToBackup := "./backups/gmail/" + account + "/backup/"
+
+	err = os.RemoveAll(pathToBackup)
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Couldn't clear the backup folder, %v", err)
+		return
+	}
+
 	err = os.MkdirAll(pathToBackup, 0777)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Directory create failed, %v", err)
