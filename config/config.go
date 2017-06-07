@@ -13,6 +13,7 @@ type Config struct {
 	Oauth2CallbackPath string `json:"oauth2_callback_path"`
 	UseLocalServer bool `json:"use_local_server"`
 	Port string `json:"port"`
+	BackupsDirectory string `json:"backups_directory"`
 }
 
 var Cfg *Config = &Config{}

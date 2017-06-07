@@ -41,9 +41,13 @@ func Init(subject string) (*DriveClient, error) {
 	return &client, nil
 }
 
-func (c *DriveClient) SubscribeOnChanges() (*drive.Channel, error) {
-	channel, err := c.s.Changes.Watch("299", &drive.Channel{Type:"web_hook", Address:"https://dkudinov.com/notify", Id:"1"}).Do()
+func (c *DriveClient) SubscribeOnChanges(url string, token string, id string) (*drive.Channel, error) {
+	channel, err := c.s.Changes.Watch(token, &drive.Channel{Type:"web_hook", Address:url, Id:id}).Do()
 	return channel, err
+}
+
+func (c *DriveClient) StopChannel(token string) error {
+	return c.s.Channels.Stop(&drive.Channel{Id:token, ResourceId:"TxHTu-9ruPOqiCPmw-bmet_godI"}).Do()
 }
 
 func (c *DriveClient) ListAllFiles() ([]*drive.File, error) {

@@ -54,6 +54,7 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 			"<h1>Improvised Admin Panel</h1>" +
 			"<div><a href=\"/backup?domain=" + domain + "&admin_email=" + admin_email + "\">backup now</a></div>" +
 			"<div><a href=\"/users?domain=" + domain + "&admin_email=" + admin_email + "\">show users</a></div>" +
+				"<div><a href=\"/backups/\">browse</a></div>" +
 			"<br><br><br><br><br><br><br><br><br><br><br><br>" +
 			"<div><a href=\"http://cs6.pikabu.ru/post_img/2015/06/09/10/1433867902_2044988577.jpg\">\"Не быть тебе дизайнером\"</a></div>"))
 }
@@ -147,11 +148,6 @@ func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(b)
 }
 
-func testNotifyHandler(rw http.ResponseWriter, r *http.Request) {
-	logger.LogRequestToService(r, true)
-
-}
-
 func main() {
 	err := config.PopulateConfigWithFile("config.json")
 	if err != nil {
@@ -174,7 +170,10 @@ func main() {
 	// Google domain verification
 	r.HandleFunc("/google7ded6bed08ed3c1b.html", googleDomainVerificationHandler).Methods("GET")
 	// Notifications
-	r.HandleFunc("/notify", testNotifyHandler)
+	r.HandleFunc("/googleDriveNotifyCallback", googleDriveNotifyCallback)
+
+	r.PathPrefix("/" + config.Cfg.BackupsDirectory + "/").Handler(
+		http.StripPrefix("/" + config.Cfg.BackupsDirectory + "/", http.FileServer(http.Dir(config.Cfg.BackupsDirectory + "/"))))
 
 	n.UseHandler(r)
 

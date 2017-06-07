@@ -7,6 +7,8 @@ import (
 	"github.com/kudinovdenis/acronis-gd/acronis_drive_client"
 	"google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/drive/v3"
+	"net/http"
+	"github.com/kudinovdenis/acronis-gd/config"
 )
 
 func backupUserGoogleDrive(user *admin.User) {
@@ -28,29 +30,42 @@ func backupUserGoogleDrive(user *admin.User) {
 			continue
 		}
 
-
-
 		if incrementalBackupNeeded {
 			logger.Logf(logger.LogLevelDefault, "Incremental backup for User: %+v started", email_string)
-			err := processChanges(user, email_string, drive_client)
+			err := processChanges(user.Id, email_string, drive_client)
 			if err != nil {
 				processError(err)
 				continue
 			}
 		} else {
 			logger.Logf(logger.LogLevelDefault, "Full backup for User: %+v started", email)
-			err := fullBackup(user, email_string, drive_client)
+			err := fullBackup(user.Id, email_string, drive_client)
 			if err != nil {
 				processError(err)
 				continue
 			}
+
+			// subscribe on changes
+			changeToken, err := drive_client.GetCurrentChangesToken()
+			if err != nil {
+				processError(err)
+			}
+
+			subscribeCallbackURL := config.Cfg.ServerURL + "/googleDriveNotifyCallback?user_email=" + email_string + "&user_id=" + user.Id
+			channelID := user.Id
+			channel, err := drive_client.SubscribeOnChanges(subscribeCallbackURL, changeToken, channelID)
+			if err != nil {
+				processError(err)
+			}
+
+			logger.Logf(logger.LogLevelDefault, "Subscribed for user changes: %s. Channel: %#v", email_string, channel)
 		}
 	}
 }
 
-func processChanges(user *admin.User, email string, drive_client *acronis_drive_client.DriveClient) error {
-	userEmailDirectoryPath := path.Join(user.Id, email)
-	userEmailChangesTokenPath := path.Join(user.Id, email, "token.json")
+func processChanges(userID string, email string, drive_client *acronis_drive_client.DriveClient) error {
+	userEmailDirectoryPath := path.Join(userID, email)
+	userEmailChangesTokenPath := path.Join(userID, email, "token.json")
 
 	changesToken , err := drive_client.LoadChangesToken(userEmailChangesTokenPath)
 	if err != nil {
@@ -89,7 +104,7 @@ func processChanges(user *admin.User, email string, drive_client *acronis_drive_
 					processError(err)
 				}
 
-				err = backupFile(user, email, file_info, drive_client)
+				err = backupFile(userID, email, file_info, drive_client)
 				if err != nil {
 					processError(err)
 				}
@@ -112,9 +127,9 @@ func processChanges(user *admin.User, email string, drive_client *acronis_drive_
 	return nil
 }
 
-func fullBackup(user *admin.User, email string, drive_client *acronis_drive_client.DriveClient) error {
-	userEmailDirectoryPath := path.Join(user.Id, email)
-	userEmailChangesTokenPath := path.Join(user.Id, email, "token.json")
+func fullBackup(userID string, email string, drive_client *acronis_drive_client.DriveClient) error {
+	userEmailDirectoryPath := path.Join(userID, email)
+	userEmailChangesTokenPath := path.Join(userID, email, "token.json")
 	
 	utils.CreateDirectory(userEmailDirectoryPath)
 
@@ -136,7 +151,7 @@ func fullBackup(user *admin.User, email string, drive_client *acronis_drive_clie
 	//
 
 	for _, file := range files {
-		err := backupFile(user, email, file, drive_client)
+		err := backupFile(userID, email, file, drive_client)
 		if err != nil {
 			processError(err)
 		}
@@ -145,20 +160,38 @@ func fullBackup(user *admin.User, email string, drive_client *acronis_drive_clie
 	return nil
 }
 
-func backupFile(user *admin.User, email string, file *drive.File, drive_client *acronis_drive_client.DriveClient) error {
+func backupFile(userID string, email string, file *drive.File, drive_client *acronis_drive_client.DriveClient) error {
 	logger.Logf(logger.LogLevelDefault, "Backing up file: %s %s", file.Name, file.MimeType)
 	// Save metadata
 	file_meta, err := drive_client.DownloadMetadata(*file)
 	if err != nil {
 		return err
 	}
-	utils.CreateFileWithReader(path.Join(user.Id, email, file.Id + "_meta.json"), file_meta)
+	utils.CreateFileWithReader(path.Join(userID, email, file.Id + "_meta.json"), file_meta)
 	// Save file content
 	reader, err := drive_client.GetFileWithReader(*file)
 	if err != nil {
 		return err
 	}
-	utils.CreateFileWithReader(path.Join(user.Id, email, file.Id), reader)
+	utils.CreateFileWithReader(path.Join(userID, email, file.Id), reader)
 
 	return nil
+}
+
+func googleDriveNotifyCallback(rw http.ResponseWriter, r *http.Request) {
+	logger.LogRequestToService(r, true)
+	user_email := r.URL.Query().Get("user_email")
+	user_id := r.URL.Query().Get("user_id")
+
+	drive_client, err := acronis_drive_client.Init(user_email)
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Cant create test drive client. %s", err.Error())
+		return
+	}
+
+	err = processChanges(user_id, user_email, drive_client)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
