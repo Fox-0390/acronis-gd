@@ -52,7 +52,8 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(
 		[]byte(
 			"<h1>Improvised Admin Panel</h1>" +
-			"<div><a href=\"/backup?domain=" + domain + "&admin_email=" + admin_email + "\">backup now</a></div>" +
+			"<div><a href=\"/backup?domain=" + domain + "&admin_email=" + admin_email + "\">backup Drive now</a></div>" +
+			"<div><a href=\"/backup_gmail\">backup Gmail now</a></div>" +
 			"<div><a href=\"/users?domain=" + domain + "&admin_email=" + admin_email + "\">show users</a></div>" +
 				"<div><a href=\"/backups/\">browse</a></div>" +
 			"<br><br><br><br><br><br><br><br><br><br><br><br>" +
@@ -93,6 +94,22 @@ func backupHandler(rw http.ResponseWriter, r *http.Request) {
 
 	group.Wait()
 	logger.Logf(logger.LogLevelDefault, "Errors: %d. %#v", len(errors), errors)
+}
+
+func gmailBackupHandler(writer http.ResponseWriter, request *http.Request) {
+	email := "monica.geller@trueimage.eu"
+
+	client, err := acronis_gmail.Init(email)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = client.BackupIndividualMessages(email)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func usersHandler(rw http.ResponseWriter, r *http.Request) {
@@ -163,6 +180,7 @@ func main() {
 	r.HandleFunc("/client", clientHandler).Methods("GET")
 	// Methods
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
+	r.HandleFunc("/backup_gmail", gmailBackupHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
 	// Registration / authorization flow
 	r.HandleFunc("/authorize", authorizationHandler).Methods("GET")

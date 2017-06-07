@@ -60,7 +60,7 @@ func Init(subject string) (*GmailClient, error) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
 
-	b, err := ioutil.ReadFile("../Acronis-backup-project-8b80e5be7c37.json")
+	b, err := ioutil.ReadFile("./Acronis-backup-project-8b80e5be7c37.json")
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (client *GmailClient) Backup(account string) (err error) {
 		logger.Logf(logger.LogLevelDefault, "Started thread w/ ID : %v", thread.Id)
 		logger.Logf(logger.LogLevelDefault, "Thread snippet : %s ", thread.Snippet)
 
-		pathToBackup := "./" + account + "/backup/" + string(thread.Id) + "/"
+		pathToBackup := "./backups/gmail/" + account + "/backup/" + string(thread.Id) + "/"
 		err = os.MkdirAll(pathToBackup, 0777)
 		if err != nil {
 			logger.Logf(logger.LogLevelError, "Directory create failed, %v", err)
@@ -126,7 +126,7 @@ func (client *GmailClient) Backup(account string) (err error) {
 }
 
 func (client *GmailClient) BackupIndividualMessages(account string) (err error) {
-	pathToBackup := "./" + account + "/backup/"
+	pathToBackup := "./backups/gmail/" + account + "/backup/"
 	err = os.MkdirAll(pathToBackup, 0777)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Directory create failed, %v", err)
@@ -195,7 +195,7 @@ func (client *GmailClient) saveMessage(account, pathToBackup, messageId string) 
 
 func (client *GmailClient) writeLatestHistoryId(account string, latestHistoryId uint64) error {
 	data := []byte(strconv.FormatUint(latestHistoryId, 10))
-	return ioutil.WriteFile("./" + account + "/backup.json", data, os.ModePerm)
+	return ioutil.WriteFile("./backups/gmail/" + account + "/backup.json", data, os.ModePerm)
 }
 
 func (client *GmailClient) Restore(account string, pathToBackup string) (err error) {
