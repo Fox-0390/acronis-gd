@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"net/http"
 	"net/http/httputil"
+	"strconv"
 )
 
 type LoggingTransport struct {
@@ -112,9 +113,11 @@ func (client *GmailClient) Backup(account string) (err error) {
 		logger.Logf(logger.LogLevelDefault, "Getted Thread Snippet : %s", t.Snippet)
 		logger.Logf(logger.LogLevelDefault, "Getted Thread Message Count %v", len(t.Messages))
 
-		err = client.saveMessages(account, pathToBackup, t.Messages)
-		if err != nil {
-			return err
+		for _, mes := range t.Messages {
+			_, err := client.saveMessage(account, pathToBackup, mes.Id)
+			if err != nil {
+				return err
+			}
 		}
 		logger.Logf(logger.LogLevelDefault, "Ended thread w/ ID : %v", thread.Id)
 	}
@@ -131,6 +134,7 @@ func (client *GmailClient) BackupIndividualMessages(account string) (err error) 
 	}
 
 	nextPageToken := ""
+	var latestHistoryId uint64
 	for {
 		listCall := client.service.Users.Messages.List(account)
 		if nextPageToken != "" {
@@ -144,9 +148,15 @@ func (client *GmailClient) BackupIndividualMessages(account string) (err error) 
 		}
 		logger.Logf(logger.LogLevelDefault, "Got Message Count %v", len(messages.Messages))
 
-		err = client.saveMessages(account, pathToBackup, messages.Messages)
-		if err != nil {
-			return err
+		for _, mes := range messages.Messages {
+			historyId, err := client.saveMessage(account, pathToBackup, mes.Id)
+			if err != nil {
+				return err
+			}
+
+			if historyId > latestHistoryId {
+				latestHistoryId = historyId
+			}
 		}
 
 		nextPageToken = messages.NextPageToken
@@ -155,28 +165,18 @@ func (client *GmailClient) BackupIndividualMessages(account string) (err error) 
 		}
 	}
 
-	return
+	logger.Logf(logger.LogLevelDefault, "Latest history id: %d", latestHistoryId)
+	return client.writeLatestHistoryId(account, latestHistoryId)
 }
 
-func (client *GmailClient) saveMessages(account, pathToBackup string, messages []*gmail.Message) error {
-	for _, mes := range messages {
-		err := client.saveMessage(account, pathToBackup, mes.Id)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (client *GmailClient) saveMessage(account, pathToBackup, messageId string) error {
+func (client *GmailClient) saveMessage(account, pathToBackup, messageId string) (uint64, error) {
 	logger.Logf(logger.LogLevelDefault, "Started message w/ ID : %v", messageId)
 	mc := client.service.Users.Messages.Get(account, messageId)
 	mc = mc.Format("raw")
 	m, err := mc.Do()
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Message Get failed , %v", err)
-		return err
+		return 0, err
 	}
 	logger.Logf(logger.LogLevelDefault, "Message snippet : %s", m.Snippet)
 
@@ -186,11 +186,16 @@ func (client *GmailClient) saveMessage(account, pathToBackup, messageId string) 
 	err = ioutil.WriteFile(pb, marshalled, 0777)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Write to File failed, %v", err)
-		return err
+		return 0, err
 	}
 
 	logger.Logf(logger.LogLevelDefault, "Ended message w/ ID : %v", messageId)
-	return nil
+	return m.HistoryId, nil
+}
+
+func (client *GmailClient) writeLatestHistoryId(account string, latestHistoryId uint64) error {
+	data := []byte(strconv.FormatUint(latestHistoryId, 10))
+	return ioutil.WriteFile("./" + account + "/backup.json", data, os.ModePerm)
 }
 
 func (client *GmailClient) Restore(account string, pathToBackup string) (err error) {
@@ -209,7 +214,7 @@ func (client *GmailClient) Restore(account string, pathToBackup string) (err err
 
 		if fi.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found dir: %v", fi.Name())
-			err = client.restoreThread(account, pathToBackup+fi.Name())
+			_, err = client.restoreThread(account, pathToBackup+fi.Name())
 			if err != nil {
 				logger.Logf(logger.LogLevelError, "Failed to restore thread if: %v, err: %v", fi.Name(), err.Error())
 			}
@@ -220,28 +225,41 @@ func (client *GmailClient) Restore(account string, pathToBackup string) (err err
 }
 
 func (client *GmailClient) RestoreIndividualMessages(account, pathToBackup string) error {
-	return client.restoreThread(account, pathToBackup)
+	latestHistoryId, err := client.restoreThread(account, pathToBackup)
+	if err != nil {
+		return err
+	}
+
+	return client.writeLatestHistoryId(account, latestHistoryId)
 }
 
-func (client *GmailClient) restoreThread(account string, pathToThread string) (err error) {
+func (client *GmailClient) restoreThread(account string, pathToThread string) (latestHistoryId uint64, err error) {
 	fileList, err := createExistingFileList(pathToThread)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to create file list: %v, err: %v", pathToThread, err.Error())
 		return
 	}
 
-	for fileName := range fileList {
-		err = client.restoreMessage(account, pathToThread+"/"+fileName)
+	var lastMessageId string
+	for _, fileName := range fileList {
+		lastMessageId, err = client.restoreMessage(account, pathToThread+"/"+fileName)
 		if err != nil {
 			logger.Logf(logger.LogLevelError, "Failed to restore thread id: %v, err: %v", fileName, err.Error())
 			return
 		}
 	}
 
+	message, err := client.service.Users.Messages.Get(account, lastMessageId).Format("metadata").Do()
+	if err != nil {
+		logger.Logf(logger.LogLevelError, "Message Get failed , %v", err)
+		return 0, err
+	}
+
+	latestHistoryId = message.HistoryId
 	return
 }
 
-func (client *GmailClient) restoreMessage(account string, pathToMsg string) (err error) {
+func (client *GmailClient) restoreMessage(account string, pathToMsg string) (messageId string, err error) {
 	raw, err := ioutil.ReadFile(pathToMsg)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to restore message path: %v, err: %v", pathToMsg, err.Error())
@@ -253,7 +271,7 @@ func (client *GmailClient) restoreMessage(account string, pathToMsg string) (err
 	err = json.Unmarshal(raw, msg)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to unmarshal message path: %v, err: %v", pathToMsg, err.Error())
-		return err
+		return "", err
 	}
 
 	var m = &gmail.Message{}
@@ -266,22 +284,42 @@ func (client *GmailClient) restoreMessage(account string, pathToMsg string) (err
 	res, err := ic.Do()
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to restore message path: %v, err: %v", pathToMsg, err.Error())
-		return err
+		return "", err
 	}
 
 	logger.Logf(logger.LogLevelDefault, "Inserted msg: %v", res)
-
+	messageId = res.Id
 	return
 }
 
-func (client *GmailClient) BackupIncrementally(account, pathToBackup string, lastHistoryId uint64) error {
+func (client *GmailClient) BackupIncrementally(account, pathToBackup, pathToBackupDescriptor string) error {
+	data, err := ioutil.ReadFile(pathToBackupDescriptor)
+	if err != nil {
+		return err
+	}
+
+	var lastHistoryId uint64
+	lastHistoryId, err = strconv.ParseUint(string(data), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return client.backupIncrementally(account, pathToBackup, lastHistoryId)
+}
+
+func (client *GmailClient) backupIncrementally(account, pathToBackup string, lastHistoryId uint64) error {
 	existingMessages, err := createExistingFileList(pathToBackup)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to create file list: %v, err: %v", pathToBackup, err.Error())
 		return err
 	}
 
-	statuses, err := client.createChangeSetFromHistory(account, lastHistoryId, existingMessages)
+	existingMessagesSet := make(map[string]struct{})
+	for _, message := range existingMessages {
+		existingMessagesSet[message] = struct{}{}
+	}
+
+	statuses, err := client.createChangeSetFromHistory(account, lastHistoryId, existingMessagesSet)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Couldn't create a status list, err: %v", err.Error())
 		return err
@@ -300,7 +338,7 @@ func (client *GmailClient) BackupIncrementally(account, pathToBackup string, las
 	return nil
 }
 
-func createExistingFileList(pathToFolder string) (fileNames map[string]struct{}, err error) {
+func createExistingFileList(pathToFolder string) (fileNames []string, err error) {
 	dir, err := os.Open(pathToFolder)
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Directory open failed, %v", err)
@@ -314,11 +352,10 @@ func createExistingFileList(pathToFolder string) (fileNames map[string]struct{},
 		return
 	}
 
-	fileNames = make(map[string]struct{})
 	for _, file := range fileList {
 		if !file.IsDir() {
 			logger.Logf(logger.LogLevelDefault, "Found file: %v", file.Name())
-			fileNames[file.Name()] = struct{}{}
+			fileNames = append(fileNames, file.Name())
 		}
 	}
 
