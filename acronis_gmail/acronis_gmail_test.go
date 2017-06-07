@@ -24,6 +24,12 @@ func TestGmailClient_BackupIndividualMessages(t *testing.T) {
 	})
 }
 
+func TestGmailClient_BackupIncrementally(t *testing.T) {
+	testBackup(t, func(client *GmailClient, account string) error {
+		return client.BackupIncrementally(account, "./"+email+"/backup/", 9087)
+	})
+}
+
 func TestGmailClient_RestoreIndividualMessages(t *testing.T) {
 	testRestore(t, func(client *GmailClient, account, pathToBackup string) error {
 		return client.RestoreIndividualMessages(email, "./"+email+"/backup/")
