@@ -191,6 +191,7 @@ func googleDriveNotifyCallback(rw http.ResponseWriter, r *http.Request) {
 
 	err = processChanges(user_id, user_email, drive_client)
 	if err != nil {
+		logger.Logf(logger.LogLevelError, "Cant process changes for client %s. %s", user_email, err.Error())
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
