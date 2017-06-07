@@ -14,6 +14,8 @@ import (
 	"io/ioutil"
 )
 
+const gmailTestEmail = "monica.geller@trueimage.eu"
+
 var errors = []error{}
 
 func GmailToGmail() {
@@ -50,14 +52,24 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.Write(
-		[]byte(
-			"<h1>Improvised Admin Panel</h1>" +
-			"<div><a href=\"/backup?domain=" + domain + "&admin_email=" + admin_email + "\">backup Drive now</a></div>" +
-			"<div><a href=\"/backup_gmail\">backup Gmail now</a></div>" +
-			"<div><a href=\"/users?domain=" + domain + "&admin_email=" + admin_email + "\">show users</a></div>" +
-				"<div><a href=\"/backups/\">browse</a></div>" +
-			"<br><br><br><br><br><br><br><br><br><br><br><br>" +
-			"<div><a href=\"http://cs6.pikabu.ru/post_img/2015/06/09/10/1433867902_2044988577.jpg\">\"Не быть тебе дизайнером\"</a></div>"))
+		[]byte(`<!doctype html>
+	<html>
+
+	<head>
+		<title>Admin panel</title>
+	</head>
+
+	<body>
+		<h1>Improvised Admin Panel</h1>
+		<div><a href="/backup?domain=` + domain + "&amp;admin_email=" + admin_email + `">backup Drive now</a></div>
+		<div><a href="/users?domain=` + domain + "&amp;admin_email=" + admin_email + `">show users</a></div>
+		<div><a href="/backup_gmail">Backup Gmail now</a></div>
+		<div><a href="/backup_gmail_incrementally">Backup Gmail incrementally</a></div>
+		<div><a href="/restore_gmail">Restore Gmail</a></div>
+		<div><a href="/backups/">browse</a></div>
+		<a style="display: block; margin-top: 100px;" href="http://cs6.pikabu.ru/post_img/2015/06/09/10/1433867902_2044988577.jpg">"Не быть тебе дизайнером"</a>
+	</body>
+</html>`))
 }
 
 func backupHandler(rw http.ResponseWriter, r *http.Request) {
@@ -97,15 +109,42 @@ func backupHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func gmailBackupHandler(writer http.ResponseWriter, request *http.Request) {
-	email := "monica.geller@trueimage.eu"
-
-	client, err := acronis_gmail.Init(email)
+	client, err := acronis_gmail.Init(gmailTestEmail)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = client.BackupIndividualMessages(email)
+	err = client.BackupIndividualMessages(gmailTestEmail)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func gmailIncrementalBackupHandler(writer http.ResponseWriter, request *http.Request) {
+	client, err := acronis_gmail.Init(gmailTestEmail)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	baseFolder := "./backups/gmail/" + gmailTestEmail
+	err = client.BackupIncrementally(gmailTestEmail, baseFolder + "/backup/", baseFolder + "/backup.json")
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func gmailRestoreHandler(writer http.ResponseWriter, request *http.Request) {
+	client, err := acronis_gmail.Init(gmailTestEmail)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = client.RestoreIndividualMessages(gmailTestEmail, "./backups/gmail/" + gmailTestEmail + "/backup")
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -181,6 +220,8 @@ func main() {
 	// Methods
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
 	r.HandleFunc("/backup_gmail", gmailBackupHandler).Methods("GET")
+	r.HandleFunc("/backup_gmail_incrementally", gmailIncrementalBackupHandler).Methods("GET")
+	r.HandleFunc("/restore_gmail", gmailRestoreHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
 	// Registration / authorization flow
 	r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
