@@ -195,4 +195,6 @@ func googleDriveNotifyCallback(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	rw.WriteHeader(http.StatusNoContent)
 }
