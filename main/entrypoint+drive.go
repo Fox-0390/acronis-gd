@@ -16,7 +16,7 @@ func backupUserGoogleDrive(user *admin.User) {
 
 	for _, email := range emails {
 		email_string := email.(map[string]interface{})["address"].(string)
-		userEmailDirectoryPath := path.Join(user.Id, email_string)
+		userEmailDirectoryPath := path.Join(config.Cfg.BackupsDirectory, user.Id, email_string)
 
 		incrementalBackupNeeded, err := utils.IsFileExists(userEmailDirectoryPath)
 		if err != nil {
@@ -64,8 +64,8 @@ func backupUserGoogleDrive(user *admin.User) {
 }
 
 func processChanges(userID string, email string, drive_client *acronis_drive_client.DriveClient) error {
-	userEmailDirectoryPath := path.Join(userID, email)
-	userEmailChangesTokenPath := path.Join(userID, email, "token.json")
+	userEmailDirectoryPath := path.Join(config.Cfg.BackupsDirectory, userID, email)
+	userEmailChangesTokenPath := path.Join(config.Cfg.BackupsDirectory, userID, email, "token.json")
 
 	changesToken , err := drive_client.LoadChangesToken(userEmailChangesTokenPath)
 	if err != nil {
@@ -128,8 +128,8 @@ func processChanges(userID string, email string, drive_client *acronis_drive_cli
 }
 
 func fullBackup(userID string, email string, drive_client *acronis_drive_client.DriveClient) error {
-	userEmailDirectoryPath := path.Join(userID, email)
-	userEmailChangesTokenPath := path.Join(userID, email, "token.json")
+	userEmailDirectoryPath := path.Join(config.Cfg.BackupsDirectory, userID, email)
+	userEmailChangesTokenPath := path.Join(config.Cfg.BackupsDirectory, userID, email, "token.json")
 	
 	utils.CreateDirectory(userEmailDirectoryPath)
 
@@ -167,13 +167,13 @@ func backupFile(userID string, email string, file *drive.File, drive_client *acr
 	if err != nil {
 		return err
 	}
-	utils.CreateFileWithReader(path.Join(userID, email, file.Id + "_meta.json"), file_meta)
+	utils.CreateFileWithReader(path.Join(config.Cfg.BackupsDirectory, userID, email, file.Id + "_meta.json"), file_meta)
 	// Save file content
 	reader, err := drive_client.GetFileWithReader(*file)
 	if err != nil {
 		return err
 	}
-	utils.CreateFileWithReader(path.Join(userID, email, file.Id), reader)
+	utils.CreateFileWithReader(path.Join(config.Cfg.BackupsDirectory, userID, email, file.Id), reader)
 
 	return nil
 }
