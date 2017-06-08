@@ -120,7 +120,6 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 
 	htmlListOfUsers := "<div><ul>"
 	for _, user := range users.Users {
-		logger.Logf(logger.LogLevelDefault, "users: %#v", user)
 		htmlListOfUsers += "<li>" + "ID: " + user.Id + " Name: " + user.Name.FullName + "</li>"
 	}
 	htmlListOfUsers += "</ul></div>"
