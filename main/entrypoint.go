@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/kudinovdenis/acronis-gd/acronis_admin_client"
-	"github.com/kudinovdenis/logger"
-	"google.golang.org/api/admin/directory/v1"
-	"sync"
 	"github.com/gorilla/mux"
-	"github.com/urfave/negroni"
-	"net/http"
+	"github.com/kudinovdenis/acronis-gd/acronis_admin_client"
 	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
 	"github.com/kudinovdenis/acronis-gd/config"
 	"github.com/kudinovdenis/acronis-gd/utils"
+	"github.com/kudinovdenis/logger"
+	"github.com/urfave/negroni"
+	"google.golang.org/api/admin/directory/v1"
 	"io/ioutil"
+	"net/http"
+	"sync"
 )
 
 const gmailTestEmail = "monica.geller@trueimage.eu"
@@ -19,17 +19,17 @@ const gmailTestEmail = "monica.geller@trueimage.eu"
 var errors = []error{}
 
 func GmailToGmail() {
-	
+
 	gb, err := acronis_gmail.Init("ao@dkudinov.com")
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to Create service backup ao, err: %v", err.Error())
 	}
-	
+
 	err = gb.Backup("ao@dkudinov.com")
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to backup, err: %v", err.Error())
 	}
-	
+
 	gr, err := acronis_gmail.Init("to@dkudinov.com")
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to Create service backup to, err: %v", err.Error())
@@ -38,9 +38,8 @@ func GmailToGmail() {
 	if err != nil {
 		logger.Logf(logger.LogLevelError, "Failed to resotre, err: %v", err.Error())
 	}
-	
-}
 
+}
 
 func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
@@ -52,11 +51,13 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.Write(
-		[]byte(`<!doctype html>
-	<html>
+		[]byte(
+			`<!doctype html>
+<html>
 
 	<head>
 		<title>Admin panel</title>
+		<script type="text/javascript" src="https://apis.google.com/js/platform.js"></script>
 	</head>
 
 	<body>
@@ -68,6 +69,7 @@ func clientHandler(rw http.ResponseWriter, r *http.Request) {
 		<div><a href="/restore_gmail">Restore Gmail</a></div>
 		<div><a href="/backups/">browse</a></div>
 		<a style="display: block; margin-top: 100px;" href="http://cs6.pikabu.ru/post_img/2015/06/09/10/1433867902_2044988577.jpg">"Не быть тебе дизайнером"</a>
+		<div class="g-additnow" data-applicationid="951874456850"></div>
 	</body>
 </html>`))
 }
@@ -130,7 +132,7 @@ func gmailIncrementalBackupHandler(writer http.ResponseWriter, request *http.Req
 	}
 
 	baseFolder := "./backups/gmail/" + gmailTestEmail
-	err = client.BackupIncrementally(gmailTestEmail, baseFolder + "/backup/", baseFolder + "/backup.json")
+	err = client.BackupIncrementally(gmailTestEmail, baseFolder+"/backup/", baseFolder+"/backup.json")
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -144,7 +146,7 @@ func gmailRestoreHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	err = client.RestoreIndividualMessages(gmailTestEmail, "./backups/gmail/" + gmailTestEmail + "/backup")
+	err = client.RestoreIndividualMessages(gmailTestEmail, "./backups/gmail/"+gmailTestEmail+"/backup")
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -183,8 +185,8 @@ func usersHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(
 		[]byte(
 			"<h1>Improvised Admin Panel</h1>" +
-			"<h2>Users</h2>" +
-			htmlListOfUsers))
+				"<h2>Users</h2>" +
+				htmlListOfUsers))
 }
 
 func googleDomainVerificationHandler(rw http.ResponseWriter, r *http.Request) {
@@ -231,7 +233,7 @@ func main() {
 	r.HandleFunc("/googleDriveNotifyCallback", googleDriveNotifyCallback)
 
 	r.PathPrefix("/" + config.Cfg.BackupsDirectory + "/").Handler(
-		http.StripPrefix("/" + config.Cfg.BackupsDirectory + "/", http.FileServer(http.Dir(config.Cfg.BackupsDirectory + "/"))))
+		http.StripPrefix("/"+config.Cfg.BackupsDirectory+"/", http.FileServer(http.Dir(config.Cfg.BackupsDirectory+"/"))))
 
 	n.UseHandler(r)
 
