@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -47,12 +48,19 @@ func GmailToGmail() {
 func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	logger.LogRequestToService(r, true)
+	fmt.Println(r.RemoteAddr)
 	// admin_email := r.URL.Query().Get("admin_email")
 
 	// if domain == "" || admin_email == "" {
 	// 	http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
 	// 	return
 	// }
+
+	referer, err := url.Parse(r.Header.Get("Referer"))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	data := url.Values{}
 	data.Set("code", code)
@@ -61,7 +69,7 @@ func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	data.Add("client_secret", "3644027438929598383")
 	data.Add("redirect_uri", "https://sobachka.gq:8081/salesforce/oauth_callback")
 
-	req, err := http.NewRequest("POST", "https://"+r.Host+"/services/oauth2/token", bytes.NewBufferString(data.Encode()))
+	req, err := http.NewRequest("POST", "https://"+referer.Host+"/services/oauth2/token", bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
