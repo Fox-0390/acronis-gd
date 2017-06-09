@@ -17,7 +17,7 @@ RUN \
     go build -o /srv/acronis-gsuite-backup && \
     rm -rf /go/src/*
 
-EXPOSE 1443
+EXPOSE 443
 
 WORKDIR /srv
 

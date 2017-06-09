@@ -5,6 +5,6 @@
   "client_secret" : "iFeQXiUoVo8msuRQH5yes7Vr",
   "oauth2_callback_path" : "/oauth2callback",
   "use_local_server" : true,
-  "port" : ":1443",
+  "port" : ":443",
   "backups_directory" : "backups"
 }
