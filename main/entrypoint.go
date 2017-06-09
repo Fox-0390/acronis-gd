@@ -1,11 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -61,7 +61,7 @@ func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	data.Add("client_secret", "3644027438929598383")
 	data.Add("redirect_uri", "https://sobachka.gq:8081/salesforce/oauth_callback")
 
-	req, err := http.NewRequest("POST", "https://login.salesforce.com/services/oauth2/token", strings.NewReader(data.Encode()))
+	req, err := http.NewRequest("POST", "https://cs43.salesforce.com/services/oauth2/token", bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
