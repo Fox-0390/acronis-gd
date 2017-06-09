@@ -66,7 +66,7 @@ func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
