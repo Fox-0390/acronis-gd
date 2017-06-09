@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"net/http"
+	"sync"
+
 	"github.com/gorilla/mux"
 	"github.com/kudinovdenis/acronis-gd/acronis_admin_client"
 	"github.com/kudinovdenis/acronis-gd/acronis_gmail"
@@ -8,10 +12,6 @@ import (
 	"github.com/kudinovdenis/acronis-gd/utils"
 	"github.com/kudinovdenis/logger"
 	"github.com/urfave/negroni"
-	"google.golang.org/api/admin/directory/v1"
-	"io/ioutil"
-	"net/http"
-	"sync"
 )
 
 const gmailTestEmail = "monica.geller@trueimage.eu"
@@ -39,6 +39,39 @@ func GmailToGmail() {
 		logger.Logf(logger.LogLevelError, "Failed to resotre, err: %v", err.Error())
 	}
 
+}
+
+func clientHandlerSalesForce(rw http.ResponseWriter, r *http.Request) {
+	// domain := r.URL.Query().Get("domain")
+	// admin_email := r.URL.Query().Get("admin_email")
+
+	// if domain == "" || admin_email == "" {
+	// 	http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
+	// 	return
+	// }
+
+	rw.Write(
+		[]byte(
+			`<!doctype html>
+<html>
+
+	<head>
+		<title>Admin panel</title>
+		<script type="text/javascript" src="https://apis.google.com/js/platform.js"></script>
+	</head>
+
+	<body>
+		<button ho type="button" onclick="reply_click('Hello Ivan')"  horizontalalign = "center" >Register</button>
+	</body>
+
+	<script type="text/javascript">
+	function reply_click(clicked_id)
+	{
+		location.href = "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9d8..z.hDcPKIDaoEIo4RD7mB2vdeg.MBv8eKwQRJyDaEG2TsPzLA_KCyg8oeDvUgNBKVbT1JxDRmcq19&redirect_uri=https://login.salesforce.com/services/oauth2/success"
+	}
+	</script>
+
+</html>`))
 }
 
 func clientHandler(rw http.ResponseWriter, r *http.Request) {
@@ -99,12 +132,12 @@ func backupHandler(rw http.ResponseWriter, r *http.Request) {
 	group.Add(len(users.Users))
 
 	// Google drive
-	for _, user := range users.Users {
-		go func(user *admin.User) {
-			backupUserGoogleDrive(user)
-			group.Done()
-		}(user)
-	}
+	// for _, user := range users.Users {
+	// 	go func(user *admin.User) {
+	// 		backupUserGoogleDrive(user)
+	// 		group.Done()
+	// 	}(user)
+	// }
 
 	group.Wait()
 	logger.Logf(logger.LogLevelDefault, "Errors: %d. %#v", len(errors), errors)
@@ -218,6 +251,8 @@ func main() {
 	r := mux.NewRouter()
 	// Main admin panel
 	r.HandleFunc("/client", clientHandler).Methods("GET")
+	// Sales force panel
+	r.HandleFunc("/salesforce", clientHandlerSalesForce).Methods("GET")
 	// Methods
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
 	r.HandleFunc("/backup_gmail", gmailBackupHandler).Methods("GET")
@@ -225,12 +260,12 @@ func main() {
 	r.HandleFunc("/restore_gmail", gmailRestoreHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
 	// Registration / authorization flow
-	r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
-	r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
+	// r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
+	// r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
 	// Google domain verification
 	r.HandleFunc("/google7ded6bed08ed3c1b.html", googleDomainVerificationHandler).Methods("GET")
 	// Notifications
-	r.HandleFunc("/googleDriveNotifyCallback", googleDriveNotifyCallback)
+	// r.HandleFunc("/googleDriveNotifyCallback", googleDriveNotifyCallback)
 
 	r.PathPrefix("/" + config.Cfg.BackupsDirectory + "/").Handler(
 		http.StripPrefix("/"+config.Cfg.BackupsDirectory+"/", http.FileServer(http.Dir(config.Cfg.BackupsDirectory+"/"))))
