@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -51,6 +54,50 @@ func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
+	data := url.Values{}
+	data.Set("code", code)
+	data.Add("grant_type", "authorization_code")
+	data.Add("client_id", "3MVG9d8..z.hDcPKIDaoEIo4RD7mB2vdeg.MBv8eKwQRJyDaEG2TsPzLA_KCyg8oeDvUgNBKVbT1JxDRmcq19")
+	data.Add("client_secret", "3644027438929598383")
+	data.Add("redirect_uri", "https://sobachka.gq:8081/salesforce/oauth_callback")
+
+	req, err := http.NewRequest("POST", "https://login.salesforce.com/services/oauth2/token", bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer res.Body.Close()
+
+	logger.LogResponseToService(res, true)
+
+	/// Get User email from jwt
+
+	type CheckResult struct {
+		ID           string `json:"id"`
+		IssuedAt     string `json:"issued_at"`
+		Scope        string `json:"scope"`
+		InstanceURL  string `json:"instance_url"`
+		TokenType    string `json:"token_type"`
+		RefreshToken string `json:"refresh_token"`
+		IDToken      string `json:"id_token"`
+		Signature    string `json:"signature"`
+		AccessToken  string `json:"access_token"`
+	}
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	token := CheckResult{}
+	json.Unmarshal(b, &token)
 	rw.Write(
 		[]byte(
 			`<!doctype html>
@@ -59,9 +106,10 @@ func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	<head>
 		<title>Admin panel</title>
 		<script type="text/javascript" src="https://apis.google.com/js/platform.js"></script>
-	</head>` + code + `<body>
+	</head>` + token.AccessToken + `<body>
 	</body>
 </html>`))
+
 }
 
 func clientHandlerSalesForce(rw http.ResponseWriter, r *http.Request) {
