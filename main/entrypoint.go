@@ -90,7 +90,7 @@ func clientHandlerSalesForce(rw http.ResponseWriter, r *http.Request) {
 	<script type="text/javascript">
 	function reply_click(clicked_id)
 	{
-		location.href = "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9d8..z.hDcPKIDaoEIo4RD7mB2vdeg.MBv8eKwQRJyDaEG2TsPzLA_KCyg8oeDvUgNBKVbT1JxDRmcq19&redirect_uri=https://login.salesforce.com/services/oauth2/success"
+		location.href = "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9d8..z.hDcPKIDaoEIo4RD7mB2vdeg.MBv8eKwQRJyDaEG2TsPzLA_KCyg8oeDvUgNBKVbT1JxDRmcq19&redirect_uri=https://sobachka.gq:8081/salesforce/oauth_callback"
 	}
 	</script>
 
