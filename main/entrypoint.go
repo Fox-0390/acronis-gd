@@ -46,7 +46,7 @@ func GmailToGmail() {
 
 func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
-
+	logger.LogRequestToService(r, true)
 	// admin_email := r.URL.Query().Get("admin_email")
 
 	// if domain == "" || admin_email == "" {
