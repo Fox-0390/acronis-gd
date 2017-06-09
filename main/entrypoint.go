@@ -41,6 +41,29 @@ func GmailToGmail() {
 
 }
 
+func clientHandlerSalesForceCallBack(rw http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+
+	// admin_email := r.URL.Query().Get("admin_email")
+
+	// if domain == "" || admin_email == "" {
+	// 	http.Error(rw, "Must provide domain and admin_email.", http.StatusBadRequest)
+	// 	return
+	// }
+
+	rw.Write(
+		[]byte(
+			`<!doctype html>
+<html>
+
+	<head>
+		<title>Admin panel</title>
+		<script type="text/javascript" src="https://apis.google.com/js/platform.js"></script>
+	</head>` + code + `<body>
+	</body>
+</html>`))
+}
+
 func clientHandlerSalesForce(rw http.ResponseWriter, r *http.Request) {
 	// domain := r.URL.Query().Get("domain")
 	// admin_email := r.URL.Query().Get("admin_email")
@@ -253,12 +276,14 @@ func main() {
 	r.HandleFunc("/client", clientHandler).Methods("GET")
 	// Sales force panel
 	r.HandleFunc("/salesforce", clientHandlerSalesForce).Methods("GET")
+	r.HandleFunc("/salesforce/oauth_callback", clientHandlerSalesForceCallBack).Methods("GET")
 	// Methods
 	r.HandleFunc("/backup", backupHandler).Methods("GET")
 	r.HandleFunc("/backup_gmail", gmailBackupHandler).Methods("GET")
 	r.HandleFunc("/backup_gmail_incrementally", gmailIncrementalBackupHandler).Methods("GET")
 	r.HandleFunc("/restore_gmail", gmailRestoreHandler).Methods("GET")
 	r.HandleFunc("/users", usersHandler).Methods("GET")
+
 	// Registration / authorization flow
 	// r.HandleFunc("/authorize", authorizationHandler).Methods("GET")
 	// r.HandleFunc("/oauth2callback", oauth2CallbackHandler).Methods("GET")
